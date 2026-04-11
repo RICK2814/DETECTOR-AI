@@ -2358,6 +2358,346 @@ span[data-emoji]::before,
   100% { transform: scale(1.1); opacity: 0; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ENHANCED ANIMATIONS FOR RESULTS, LOADING & MICRO-INTERACTIONS (v2.0)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── DRAMATIC GAUGE FILL ANIMATIONS ─── */
+@keyframes gaugeFillCyan {
+  0% { stroke-dashoffset: 282.7; opacity: 0; filter: drop-shadow(0 0 0px rgba(0,229,255,0)); }
+  10% { opacity: 1; }
+  100% { stroke-dashoffset: 0; filter: drop-shadow(0 0 12px rgba(0,229,255,0.8)); }
+}
+
+@keyframes gaugeFillPink {
+  0% { stroke-dashoffset: 282.7; opacity: 0; filter: drop-shadow(0 0 0px rgba(255,60,110,0)); }
+  10% { opacity: 1; }
+  100% { stroke-dashoffset: 0; filter: drop-shadow(0 0 12px rgba(255,60,110,0.8)); }
+}
+
+@keyframes gaugeFillGreen {
+  0% { stroke-dashoffset: 282.7; opacity: 0; filter: drop-shadow(0 0 0px rgba(109,255,179,0)); }
+  10% { opacity: 1; }
+  100% { stroke-dashoffset: 0; filter: drop-shadow(0 0 12px rgba(109,255,179,0.8)); }
+}
+
+/* ─── STAGGERED CARD REVEAL ANIMATIONS ─── */
+@keyframes cardRevealStagger {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    filter: blur(4px);
+  }
+  50% {
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes resultCardStagger-1 {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    filter: blur(4px);
+  }
+  50% {
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes resultCardStagger-2 {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    filter: blur(4px);
+  }
+  50% {
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes resultCardStagger-3 {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    filter: blur(4px);
+  }
+  50% {
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes resultCardStagger-4 {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    filter: blur(4px);
+  }
+  50% {
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* ─── SUCCESS/CELEBRATION ANIMATIONS ─── */
+@keyframes successBurst {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-180deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.2) rotate(12deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes celebrationPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(109,255,179,0.8));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 20px rgba(109,255,179,0.8)) drop-shadow(0 0 40px rgba(0,229,255,0.4));
+  }
+}
+
+@keyframes confettiPop {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* ─── ENHANCED PAGE TRANSITIONS ─── */
+@keyframes pageSlideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-60px) scale(0.98);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes pageSlideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(60px) scale(0.98);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes pageSlideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.98);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* ─── MICRO-INTERACTIONS: CHECKMARK DRAW ─── */
+@keyframes checkmarkDraw {
+  0% {
+    stroke-dashoffset: 60;
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes checkmarkCircle {
+  0% {
+    stroke-dashoffset: 200;
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+/* ─── MICRO-INTERACTIONS: ERROR SHAKE ─── */
+@keyframes errorShakeIntense {
+  0%, 100% { transform: translateX(0) rotateZ(0deg); }
+  10% { transform: translateX(-8px) rotateZ(-1deg); }
+  20% { transform: translateX(8px) rotateZ(1deg); }
+  30% { transform: translateX(-8px) rotateZ(-1deg); }
+  40% { transform: translateX(8px) rotateZ(1deg); }
+  50% { transform: translateX(-6px) rotateZ(-0.5deg); }
+  60% { transform: translateX(6px) rotateZ(0.5deg); }
+  70% { transform: translateX(-4px) rotateZ(-0.2deg); }
+  80% { transform: translateX(2px) rotateZ(0.2deg); }
+}
+
+/* ─── MICRO-INTERACTIONS: SUCCESS PULSE ─── */
+@keyframes successPulseIntense {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(109,255,179,0.5));
+  }
+  50% {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 20px rgba(109,255,179,1)) drop-shadow(0 0 40px rgba(109,255,179,0.5));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(109,255,179,0.5));
+  }
+}
+
+/* ─── ENHANCED LOADING SPINNERS ─── */
+@keyframes spinnerBounce {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+
+@keyframes spinnerWave {
+  0% { transform: rotateZ(0deg); }
+  100% { transform: rotateZ(360deg); }
+}
+
+@keyframes spinnerPulseRing {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 60;
+    opacity: 0;
+  }
+}
+
+/* ─── VERDICT BADGE ANIMATIONS ─── */
+@keyframes verdictAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.85) rotateX(90deg);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.05) rotateX(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+    filter: blur(0);
+  }
+}
+
+/* ─── RESULTS SECTION ANIMATIONS ─── */
+@keyframes resultsSectionSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+    pointer-events: none;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+@keyframes resultsHeaderHighlight {
+  0%, 100% {
+    background-position: -200% center;
+  }
+  50% {
+    background-position: 200% center;
+  }
+}
+
+/* ─── SCORE BAR ANIMATIONS ─── */
+@keyframes scoreBarFill {
+  0% {
+    width: 0%;
+    box-shadow: 0 0 0px rgba(0,229,255,0);
+  }
+  100% {
+    width: var(--score-width, 75%);
+    box-shadow: 0 0 16px rgba(0,229,255,0.6);
+  }
+}
+
+@keyframes scoreBarGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(0,229,255,0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(0,229,255,0.8));
+  }
+}
+
+/* ─── COMPARATIVE ANIMATIONS ─── */
+@keyframes slideUpStagger {
+  0% { opacity: 0; transform: translateY(25px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger timings for multiple elements */
+.slide-up-1 { animation: slideUpStagger 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 0ms forwards; }
+.slide-up-2 { animation: slideUpStagger 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 100ms forwards; }
+.slide-up-3 { animation: slideUpStagger 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms forwards; }
+.slide-up-4 { animation: slideUpStagger 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 300ms forwards; }
+.slide-up-5 { animation: slideUpStagger 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 400ms forwards; }
+
 /* FactCheck premium scanner */
 .factcheck-loader-shell {
   position: relative;

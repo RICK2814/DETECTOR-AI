@@ -55,7 +55,7 @@ export default function Results({ result, onReset }) {
   if (!result) return null;
 
   return (
-    <div className="reveal-slow fade-in-slow" style={{ animation: "fadeInUpCascade 600ms cubic-bezier(0.34,1.56,0.64,1)" }}>
+    <div className="reveal-slow fade-in-slow" style={{ animation: "pageSlideInUp 700ms cubic-bezier(0.34,1.56,0.64,1)" }}>
       <style>{`
         @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         .toggle-btn { background:none; border:1px solid var(--border2); border-radius:6px;
@@ -76,8 +76,8 @@ export default function Results({ result, onReset }) {
       `}</style>
 
       {/* ── Main Verdict Card ── */}
-      <div className="hud-frame fade-in-cascade-1" style={{
-        animation: "fadeInUpCascade 500ms cubic-bezier(0.34,1.56,0.64,1)",
+      <div className="hud-frame slide-up-1" style={{
+        animation: "resultCardStagger-1 600ms cubic-bezier(0.34,1.56,0.64,1) forwards",
         marginBottom: 16,
       }}>
       <div style={{
@@ -163,7 +163,7 @@ export default function Results({ result, onReset }) {
       </div>
 
       {/* ── Stats Row ── */}
-      <div className="hud-frame fade-in-cascade-2" style={{ marginBottom:16, animation: "fadeInUpCascade 500ms cubic-bezier(0.34,1.56,0.64,1) 100ms backwards" }}>
+      <div className="hud-frame slide-up-2" style={{ marginBottom:16, animation: "resultCardStagger-2 600ms cubic-bezier(0.34,1.56,0.64,1) forwards" }}>
       <Card>
         <CardHeader>Document Statistics</CardHeader>
         <div style={{
@@ -187,7 +187,7 @@ export default function Results({ result, onReset }) {
 
       {/* ── Signal Bars ── */}
       {result.signals && (
-        <div className="hud-frame fade-in-cascade-3" style={{ marginBottom:16, animation: "fadeInUpCascade 500ms cubic-bezier(0.34,1.56,0.64,1) 200ms backwards" }}>
+        <div className="hud-frame slide-up-3" style={{ marginBottom:16, animation: "resultCardStagger-3 600ms cubic-bezier(0.34,1.56,0.64,1) forwards" }}>
         <Card>
           <CardHeader>Detection Signals</CardHeader>
           <div style={{ padding:16, display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
@@ -222,7 +222,7 @@ export default function Results({ result, onReset }) {
       )}
 
       {/* ── Forensic Analysis ── */}
-      <div className="hud-frame" style={{ marginBottom:16 }}>
+      <div className="hud-frame slide-up-4" style={{ marginBottom:16, animation: "resultCardStagger-4 600ms cubic-bezier(0.34,1.56,0.64,1) forwards" }}>
       <Card>
         <CardHeader>Forensic Analysis</CardHeader>
         <div style={{ padding:20 }}>
