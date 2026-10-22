@@ -103,6 +103,7 @@ function AmbientMotion() {
     let width = 0;
     let height = 0;
     let raf = 0;
+    let lastFrame = 0;
     let particles = [];
     const pointer = { x: -1000, y: -1000, tx: -1000, ty: -1000 };
 
@@ -115,7 +116,7 @@ function AmbientMotion() {
       canvas.style.width = width + "px";
       canvas.style.height = height + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.min(width < 680 ? 26 : 58, Math.max(18, Math.round((width * height) / 26000)));
+      const count = Math.min(width < 680 ? 14 : 30, Math.max(12, Math.round((width * height) / 48000)));
       particles = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -128,6 +129,8 @@ function AmbientMotion() {
     };
 
     const render = (time) => {
+      if (!reduced && time - lastFrame < 1000 / 40) { raf = window.requestAnimationFrame(render); return; }
+      lastFrame = time;
       ctx.clearRect(0, 0, width, height);
       pointer.x += (pointer.tx - pointer.x) * .035;
       pointer.y += (pointer.ty - pointer.y) * .035;
@@ -160,11 +163,11 @@ function AmbientMotion() {
           const dx = p.x - q.x;
           const dy = p.y - q.y;
           const distance = Math.hypot(dx, dy);
-          if (distance < 112) {
+          if (distance < 104) {
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(q.x, q.y);
-            ctx.strokeStyle = "rgba(105, 166, 239, " + ((1 - distance / 112) * .12) + ")";
+            ctx.strokeStyle = "rgba(105, 166, 239, " + ((1 - distance / 104) * .105) + ")";
             ctx.lineWidth = .7;
             ctx.stroke();
           }
@@ -172,11 +175,11 @@ function AmbientMotion() {
         const mx = p.x - pointer.x;
         const my = p.y - pointer.y;
         const md = Math.hypot(mx, my);
-        if (md < 155) {
+        if (md < 145) {
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(pointer.x, pointer.y);
-          ctx.strokeStyle = "rgba(123, 231, 255, " + ((1 - md / 155) * .16) + ")";
+          ctx.strokeStyle = "rgba(123, 231, 255, " + ((1 - md / 145) * .14) + ")";
           ctx.lineWidth = .7;
           ctx.stroke();
         }
