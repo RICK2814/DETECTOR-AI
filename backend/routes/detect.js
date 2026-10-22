@@ -820,9 +820,10 @@ Verdicts:
 - UNVERIFIED: evidence is missing, too weak, based only on headlines, does not match the claim, or sources materially conflict.
 Do not infer FALSE from lack of coverage. Headline-only items are not enough by themselves to justify TRUE or FALSE. A related fact-check only applies if the reviewed claim materially matches the claim being evaluated. Do not invent sources, quotes, dates or facts. Prefer primary sources and independent reputable reporting. AI probabilities are not proof.
 
-Return only JSON in this shape:
-{"results":[{"claim_id":"C1","verdict":"TRUE|FALSE|MIXED|UNVERIFIED","confidence":"LOW|MEDIUM|HIGH","explanation":"max 65 words, in the same language as the input when practical","source_ids":["C1-N1"]}]}
-Use only source_ids that exist in the provided evidence. If evidence is insufficient, use UNVERIFIED with LOW confidence and source_ids [].`;
+Return only JSON. Each claim result must use exactly one verdict value: TRUE, FALSE, MIXED, or UNVERIFIED. Do not return the pipe-delimited list as a literal verdict.
+Example structure:
+{"results":[{"claim_id":"C1","verdict":"UNVERIFIED","confidence":"LOW","explanation":"Short evidence-based explanation.","source_ids":[]}]}
+Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sources that materially support the explanation; never invent an ID. A TRUE or FALSE verdict must cite at least one directly relevant source. If evidence is insufficient, conflicting, headline-only, or unrelated, use UNVERIFIED with LOW confidence and source_ids []. Do not output a definitive verdict merely to avoid an UNVERIFIED label.`;
 
   const evidencePayload = evidenceByClaim.map(claim => ({
     id: claim.id,
