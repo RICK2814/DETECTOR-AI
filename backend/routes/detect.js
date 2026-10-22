@@ -911,7 +911,7 @@ Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sou
   return {
     results,
     method: "retrieval_assisted",
-    warning: "Verdicts are evidence-based assessments, not guarantees. UNVERIFIED means available evidence was insufficient; review the linked sources for context.",
+    warning: `Verdicts are evidence-based assessments, not guarantees. UNVERIFIED means available evidence was insufficient; review the linked sources for context.${(process.env.GOOGLE_FACT_CHECK_API_KEY || "").trim() ? "" : " Published fact-check database search is not configured; news-source searches are still used."}`,
     factCheckDatabaseAvailable: Boolean((process.env.GOOGLE_FACT_CHECK_API_KEY || "").trim()),
   };
 }
