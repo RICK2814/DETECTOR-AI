@@ -42,6 +42,17 @@ export default function FactCheckResults({ result, onReset }) {
         </div>
       </Card>
 
+      {result?.factCheckDatabaseAvailable === false && (
+        <Card style={{ marginBottom: 16, padding: 14, border: "1px solid var(--warn)" }}>
+          <div style={{ color: "var(--warn)", fontSize: 11, fontWeight: 800, marginBottom: 6 }}>
+            PUBLISHED FACT-CHECK SEARCH NOT CONFIGURED
+          </div>
+          <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.7 }}>
+            News-source search is still enabled, but previously published claim reviews are not being queried. To add that evidence source, configure GOOGLE_FACT_CHECK_API_KEY in Vercel Environment Variables. The key is optional; without usable evidence, a claim will correctly remain UNVERIFIED.
+          </div>
+        </Card>
+      )}
+
       {claims.length === 0 && (
         <Card style={{ padding: 20, marginBottom: 16 }}>
           <div style={{ color: "var(--text)", fontWeight: 700, marginBottom: 8 }}>No verifiable claims found</div>
