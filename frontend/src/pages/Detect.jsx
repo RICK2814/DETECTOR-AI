@@ -39,10 +39,10 @@ export default function Detect() {
   const [factLoading, setFactLoading] = useState(false);
   const [factCheckResult, setFactCheckResult] = useState(null);
   const [factCheckError, setFactCheckError] = useState(null);
-  const factTextWc = factText.trim() ? factText.trim().split(/\\s+/).filter(Boolean).length : 0;
+  const factTextWc = factText.trim() ? factText.trim().split(/\s+/).filter(Boolean).length : 0;
   const canFactCheck = !factLoading && (
     (factInputTab === "text" && factTextWc >= 20) ||
-    (factInputTab === "url" && /^https?:\\/\\//i.test(factUrl.trim()))
+    (factInputTab === "url" && /^https?:\/\//i.test(factUrl.trim()))
   );
 
   // When URL extraction fails — show inline paste fallback
