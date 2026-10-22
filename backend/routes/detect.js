@@ -590,7 +590,9 @@ function compactClaimQuery(claim, maxWords = 12) {
     "out","own","she","too","use","who","why","how","one","two","per","via","did","has",
     "him","let","may","new","now","off","old","put","see","get"
   ]);
-  const words = String(claim || "").match(/[\\p{L}\\p{N}][\\p{L}\\p{N}'’-]*/gu) || [];
+  // Keep Latin, Bengali, Hindi and numeric tokens without depending on regex
+  // property-escape support in a bundled serverless runtime.
+  const words = String(claim || "").match(/[A-Za-z0-9\u0980-\u09FF\u0900-\u097F][A-Za-z0-9\u0980-\u09FF\u0900-\u097F'’-]*/g) || [];
   const unique = [];
   const seen = new Set();
   for (const word of words) {
@@ -605,10 +607,9 @@ function compactClaimQuery(claim, maxWords = 12) {
 
 async function searchNewsRss(claim, mode = "news") {
   try {
-    const url = "https://news.google.com/rss/search";
     const compact = compactClaimQuery(claim, 12);
-    const query = mode === "fact_check" ? `"${compact}" fact check` : compact;
-    const response = await axios.get(url, {
+    const query = mode === "fact_check" ? `${compact} fact check` : compact;
+    const response = await axios.get("https://news.google.com/rss/search", {
       params: { q: query, ...getClaimLocale(claim) },
       timeout: 7000,
       maxContentLength: 1500000,
@@ -624,7 +625,7 @@ async function searchNewsRss(claim, mode = "news") {
       const publisher = cleanText(node.find("source").first().text(), 120);
       const publishedAt = cleanText(node.find("pubDate").first().text(), 100);
       const description = cleanText(node.find("description").first().text().replace(/<[^>]*>/g, " "), 700);
-      if (!headline || !/^https?:\\/\\//i.test(link)) return;
+      if (!headline || !/^https?:\/\//i.test(link)) return;
       items.push({ headline, url: link, publisher, publishedAt, description, searchType: mode, searchEngine: "Google News" });
     });
     return items;
@@ -639,7 +640,7 @@ async function searchNewsRss(claim, mode = "news") {
 async function searchBingNewsRss(claim, mode = "news") {
   try {
     const compact = compactClaimQuery(claim, 10);
-    const query = mode === "fact_check" ? `"${compact}" fact check` : compact;
+    const query = mode === "fact_check" ? `${compact} fact check` : compact;
     const locale = getClaimLocale(claim);
     const response = await axios.get("https://www.bing.com/news/search", {
       params: {
@@ -666,14 +667,14 @@ async function searchBingNewsRss(claim, mode = "news") {
         const sourceTag = node.children().toArray().find(el => /source/i.test(el.name || ""));
         if (sourceTag) publisher = cleanText($(sourceTag).text(), 120);
       }
-      if (!headline || !/^https?:\\/\\//i.test(link)) return;
+      if (!headline || !/^https?:\/\//i.test(link)) return;
       let host = "";
-      try { host = new URL(link).hostname.replace(/^www\\./i, ""); } catch (_) {}
-      if (/(^|\\.)bing\\.com$/i.test(host) || /(^|\\.)news\\.google\\.com$/i.test(host)) return;
+      try { host = new URL(link).hostname.toLowerCase(); } catch (_) {}
+      if (host === "bing.com" || host.endsWith(".bing.com") || host === "news.google.com" || host.endsWith(".news.google.com")) return;
       items.push({
         headline,
         url: link,
-        publisher: publisher || host || "News publisher",
+        publisher: publisher || host.replace(/^www\./i, "") || "News publisher",
         publishedAt,
         description,
         searchType: mode,
@@ -1084,8 +1085,15 @@ Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sou
     };
   });
 
+  const liveNewsSourceCount = new Set(
+    evidenceByClaim.flatMap(claim => claim.sources
+      .filter(source => source.kind === "news_report" && source.url)
+      .map(source => source.url))
+  ).size;
+
   return {
     results,
+    liveNewsSourceCount,
     method: "retrieval_assisted",
     warning: `Verdicts are evidence-based assessments, not guarantees. UNVERIFIED means available evidence was insufficient; review the linked sources for context.${factCheckDatabaseStatus === "not_configured" ? " Published fact-check database search is not configured; news-source searches are still used." : factCheckDatabaseStatus === "working_no_matches" ? " The Google Fact Check API responded successfully, but it had no matching published fact-checks for these claims." : factCheckDatabaseStatus === "invalid_key_or_request" ? " Google Fact Check API rejected the key or request; check the key and API configuration." : factCheckDatabaseStatus === "api_disabled_or_key_restricted" ? " Google Fact Check API returned a permission error; enable the API and verify the key's API restrictions." : factCheckDatabaseStatus === "quota_exceeded" ? " Google Fact Check API quota/rate limit was reached." : factCheckDatabaseStatus === "request_failed" ? " Google Fact Check API could not be reached successfully; check Vercel Function Logs." : ""}`,
     sourceClassification: satirePublisher ? "satire" : (originalArticleSource ? "article" : "web"),
