@@ -829,7 +829,7 @@ async function factCheckArticleText(articleText) {
       if (source.url && !uniqueSources.has(source.url)) uniqueSources.set(source.url, source);
     }
     const factCheckSources = publishedChecks.slice(0, 3);
-    const newsSources = retrieved.slice(0, 2);
+    const newsSources = retrieved.slice(0, 3);
     const combined = new Map();
     for (const source of [...factCheckSources, ...newsSources]) {
       if (source.url && !combined.has(source.url)) combined.set(source.url, source);
