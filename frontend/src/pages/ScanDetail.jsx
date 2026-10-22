@@ -27,7 +27,7 @@ export default function ScanDetail() {
   }, [id]);
 
   return (
-    <div style={{ maxWidth: 820, margin: "0 auto", padding: "48px 20px 80px" }}>
+    <main className="detail-page" style={{ maxWidth: 820, margin: "0 auto", padding: "48px 20px 80px" }}>
       <Button variant="ghost" onClick={() => navigate("/history")} style={{ marginBottom: 24, padding: "8px 16px", fontSize: 11 }}>
         ← Back to History
       </Button>
@@ -35,6 +35,6 @@ export default function ScanDetail() {
       {loading && <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><Spinner size={48} /></div>}
       {error && <div style={{ color: "var(--accent2)", padding: 20 }}>⚠️ {error}</div>}
       {scan && <Results result={scan} onReset={() => navigate("/")} />}
-    </div>
+    </main>
   );
 }
