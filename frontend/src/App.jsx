@@ -13,9 +13,10 @@ const shellStyle = {
   minHeight: "100vh",
   background: "var(--bg)",
   backgroundImage: `
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,255,0.06) 0%, transparent 60%),
-    repeating-linear-gradient(0deg,  transparent, transparent 39px, rgba(26,42,58,0.25) 39px, rgba(26,42,58,0.25) 40px),
-    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(26,42,58,0.12) 39px, rgba(26,42,58,0.12) 40px)
+    radial-gradient(ellipse 76% 34% at 50% -8%, rgba(86,179,255,0.105) 0%, transparent 68%),
+    radial-gradient(ellipse 40% 28% at 96% 22%, rgba(132,117,255,0.045) 0%, transparent 75%),
+    repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(125,154,199,0.035) 47px, rgba(125,154,199,0.035) 48px),
+    repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(125,154,199,0.027) 47px, rgba(125,154,199,0.027) 48px)
   `,
 };
 
