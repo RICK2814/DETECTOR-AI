@@ -1090,10 +1090,16 @@ Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sou
       .filter(source => source.kind === "news_report" && source.url)
       .map(source => source.url))
   ).size;
+  const publishedFactCheckSourceCount = new Set(
+    evidenceByClaim.flatMap(claim => claim.sources
+      .filter(source => source.kind === "published_fact_check" && source.url)
+      .map(source => source.url))
+  ).size;
 
   return {
     results,
     liveNewsSourceCount,
+    publishedFactCheckSourceCount,
     method: "retrieval_assisted",
     warning: `Verdicts are evidence-based assessments, not guarantees. UNVERIFIED means available evidence was insufficient; review the linked sources for context.${factCheckDatabaseStatus === "not_configured" ? " Published fact-check database search is not configured; news-source searches are still used." : factCheckDatabaseStatus === "working_no_matches" ? " The Google Fact Check API responded successfully, but it had no matching published fact-checks for these claims." : factCheckDatabaseStatus === "invalid_key_or_request" ? " Google Fact Check API rejected the key or request; check the key and API configuration." : factCheckDatabaseStatus === "api_disabled_or_key_restricted" ? " Google Fact Check API returned a permission error; enable the API and verify the key's API restrictions." : factCheckDatabaseStatus === "quota_exceeded" ? " Google Fact Check API quota/rate limit was reached." : factCheckDatabaseStatus === "request_failed" ? " Google Fact Check API could not be reached successfully; check Vercel Function Logs." : ""}`,
     sourceClassification: satirePublisher ? "satire" : (originalArticleSource ? "article" : "web"),
