@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getHistory, deleteScan } from "../utils/api";
-import { VerdictBadge, Card, CardHeader, Button, Spinner } from "../components/UI";
+import { VerdictBadge, Card, CardHeader, Button, Spinner, Icon } from "../components/UI";
 
 function formatDate(dt) {
   return new Date(dt).toLocaleString("en-IN", {
@@ -69,7 +69,7 @@ export default function History() {
           background: "rgba(255,60,110,0.08)", border: "1px solid rgba(255,60,110,0.3)",
           borderRadius: 10, padding: 20, fontSize: 13, color: "#ff8aa8",
         }}>
-          ⚠️ {error} — <button onClick={load} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer" }}>Retry</button>
+          <Icon name="alert-triangle" size={16}/> {error} — <button onClick={load} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer" }}>Retry</button>
         </div>
       )}
 
@@ -78,7 +78,7 @@ export default function History() {
           {data.scans.length === 0 ? (
             <Card>
               <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--muted)" }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
+                <div className="empty-state__icon"><Icon name="database" size={30}/></div>
                 <p>No scans yet. <button onClick={() => navigate("/")} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontFamily: "var(--mono)" }}>Run your first analysis →</button></p>
               </div>
             </Card>
@@ -106,9 +106,7 @@ export default function History() {
                       onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                     >
                       {/* Source icon */}
-                      <span style={{ fontSize: 20, flexShrink: 0 }}>
-                        {scan.source_type === "url" ? "🌐" : scan.source_type === "file" ? "📄" : "✏️"}
-                      </span>
+                      <span className="scan-row__source-icon"><Icon name={scan.source_type === "url" ? "globe" : scan.source_type === "file" ? "file-text" : "file"} size={19}/></span>
 
                       {/* Info */}
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -138,7 +136,7 @@ export default function History() {
                           onMouseEnter={e => e.target.style.color = "var(--accent2)"}
                           onMouseLeave={e => e.target.style.color = "var(--muted)"}
                         >
-                          {deleting === scan.id ? "…" : "🗑"}
+                          {deleting === scan.id ? "…" : <Icon name="trash" size={16}/>}
                         </button>
                       </div>
                     </div>
