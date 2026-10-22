@@ -124,7 +124,7 @@ function AmbientMotion() {
         r: Math.random() * 1.35 + .45,
         phase: Math.random() * Math.PI * 2,
       }));
-      render(0);
+      if (reduced) render(0);
     };
 
     const render = (time) => {
