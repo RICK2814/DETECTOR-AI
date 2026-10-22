@@ -688,6 +688,61 @@ async function searchBingNewsRss(claim, mode = "news") {
   }
 }
 
+// General web search fallback for claims that are not covered by a published
+// fact-check or a conventional news article. Search snippets are leads, not proof.
+async function searchDuckDuckGoWeb(claim, mode = "web") {
+  try {
+    const compact = compactClaimQuery(claim, 12);
+    const query = mode === "fact_check" ? `${compact} fact check` : compact;
+    const locale = getClaimLocale(claim);
+    const response = await axios.get("https://html.duckduckgo.com/html/", {
+      params: { q: query, kl: locale.languageCode === "bn" ? "in-bn" : locale.languageCode === "hi" ? "in-hi" : "in-en" },
+      timeout: 8000,
+      maxContentLength: 2500000,
+      headers: {
+        "User-Agent": HEADERS["User-Agent"],
+        "Accept": "text/html,application/xhtml+xml,*/*",
+        "Accept-Language": locale.languageCode === "bn" ? "bn-IN,bn;q=0.9,en;q=0.7" : locale.languageCode === "hi" ? "hi-IN,hi;q=0.9,en;q=0.7" : "en-IN,en;q=0.9",
+      },
+    });
+    const $ = cheerio.load(String(response.data || ""));
+    const items = [];
+    $(".result").each((index, element) => {
+      if (items.length >= 6) return;
+      const node = $(element);
+      const anchor = node.find("a.result__a").first();
+      const headline = cleanText(anchor.text(), 240);
+      let link = cleanText(anchor.attr("href"), 1200);
+      if (link.startsWith("//")) link = "https:" + link;
+      try {
+        const parsed = new URL(link);
+        if (/(^|\\.)duckduckgo\\.com$/i.test(parsed.hostname) && parsed.pathname.includes("/l/")) {
+          const target = parsed.searchParams.get("uddg");
+          if (target) link = decodeURIComponent(target);
+        }
+      } catch (_) {}
+      const description = cleanText(node.find(".result__snippet").first().text(), 850);
+      if (!headline || !/^https?:\\/\\//i.test(link)) return;
+      let host = "";
+      try { host = new URL(link).hostname.replace(/^www\\./i, "").toLowerCase(); } catch (_) {}
+      if (!host || /(^|\\.)duckduckgo\\.com$/i.test(host)) return;
+      items.push({
+        headline,
+        url: link,
+        publisher: host,
+        publishedAt: "",
+        description,
+        searchType: mode,
+        searchEngine: "DuckDuckGo Web Search",
+      });
+    });
+    return items;
+  } catch (err) {
+    console.warn("[FACT CHECK] General web search unavailable:", err.response?.status || err.message);
+    return [];
+  }
+}
+
 // Google News RSS items are wrapper URLs, not publisher article URLs.
 // Resolve the wrapper with Google's current article-page signature flow so the
 // fact checker can inspect the actual publisher page rather than a Google shell.
@@ -774,7 +829,7 @@ async function fetchNewsEvidence(item, id) {
   const resolvedUrl = publisherUrl || (/(^|\.)news\.google\.com$/i.test(new URL(item.url).hostname) ? null : item.url);
   const base = {
     id,
-    kind: "news_report",
+    kind: item.searchEngine === "DuckDuckGo Web Search" ? "web_search_result" : "news_report",
     title: item.headline,
     url: resolvedUrl,
     publisher: item.publisher || "Publisher shown in Google News",
@@ -912,12 +967,13 @@ async function factCheckArticleText(articleText, articleUrl = "") {
 
   // Retrieve published fact-checks and independent news coverage for every claim.
   const evidenceByClaim = await Promise.all(claims.map(async claim => {
-    const [publishedSearch, googleNewsItems, googleFactCheckItems, bingNewsItems, bingFactCheckItems] = await Promise.all([
+    const [publishedSearch, googleNewsItems, googleFactCheckItems, bingNewsItems, bingFactCheckItems, webSearchItems] = await Promise.all([
       searchPublishedFactChecks(claim.text),
       searchNewsRss(claim.text, "news"),
       searchNewsRss(claim.text, "fact_check"),
       searchBingNewsRss(claim.text, "news"),
       searchBingNewsRss(claim.text, "fact_check"),
+      searchDuckDuckGoWeb(claim.text, "web"),
     ]);
     const rssItems = googleNewsItems;
     const factCheckNewsItems = googleFactCheckItems;
@@ -930,9 +986,10 @@ async function factCheckArticleText(articleText, articleUrl = "") {
     // Reserve space for general news reporting so a noisy fact-check search
     // cannot crowd out all primary/general reporting evidence.
     for (const item of [
-      // Prefer direct Bing publisher URLs first. Google News wrapper resolution
-      // is only a fallback so a blocked wrapper cannot waste the whole request.
-      ...bingNewsItems.slice(0, 4),
+      ...webSearchItems.slice(0, 4),
+      // Prefer direct publisher URLs next; Google News wrapper resolution is
+      // used later because opaque wrappers can fail in serverless functions.
+      ...bingNewsItems.slice(0, 3),
       ...bingFactCheckItems.slice(0, 1),
       ...rssItems.slice(0, 2),
       ...factCheckNewsItems.slice(0, 1),
@@ -942,6 +999,12 @@ async function factCheckArticleText(articleText, articleUrl = "") {
     ]) {
       const key = (item.url || item.headline || "").toLowerCase();
       if (!key || seenArticleKeys.has(key)) continue;
+      if (articleHost && item.url) {
+        try {
+          const candidateHost = new URL(item.url).hostname.replace(/^www\\./i, "").toLowerCase();
+          if (candidateHost === articleHost || candidateHost.endsWith("." + articleHost)) continue;
+        } catch (_) {}
+      }
       seenArticleKeys.add(key);
       combinedItems.push(item);
     }
@@ -1031,7 +1094,7 @@ Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sou
       confidence = "LOW";
     }
     if (selectedSources.length > 0 &&
-        selectedSources.every(source => source.kind === "news_report" && !source.hasFullText) &&
+        selectedSources.every(source => source.kind !== "published_fact_check" && !source.hasFullText) &&
         (verdict === "TRUE" || verdict === "FALSE")) {
       // A useful RSS excerpt can support a cautious assessment only when it
       // independently corroborates the same claim across two publishers.
@@ -1091,7 +1154,7 @@ Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sou
 
   const liveNewsSourceCount = new Set(
     evidenceByClaim.flatMap(claim => claim.sources
-      .filter(source => source.kind === "news_report" && source.url)
+      .filter(source => ["news_report", "web_search_result"].includes(source.kind) && source.url)
       .map(source => source.url))
   ).size;
   const publishedFactCheckSourceCount = new Set(
