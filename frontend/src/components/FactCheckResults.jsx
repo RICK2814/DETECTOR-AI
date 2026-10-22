@@ -35,7 +35,7 @@ export default function FactCheckResults({ result, onReset }) {
       <Card style={{ marginBottom: 16 }}>
         <CardHeader>NEWS FACT-CHECK RESULTS</CardHeader>
         <div style={{ padding: 16, color: "var(--muted)", fontSize: 12, lineHeight: 1.7 }}>
-          {claims.length} claim{claims.length === 1 ? "" : "s"} reviewed using retrieved fact-checks and news coverage.
+          {claims.length} claim{claims.length === 1 ? "" : "s"} reviewed against retrieved news coverage{result?.factCheckDatabaseAvailable ? " and published fact-checks" : ""}.
           <div style={{ marginTop: 4 }}>
             TRUE/FALSE labels require supporting evidence. UNVERIFIED means the available sources were insufficient or did not match the claim well enough.
           </div>
