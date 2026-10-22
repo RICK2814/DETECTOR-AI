@@ -930,18 +930,22 @@ async function factCheckArticleText(articleText, articleUrl = "") {
     // Reserve space for general news reporting so a noisy fact-check search
     // cannot crowd out all primary/general reporting evidence.
     for (const item of [
-      ...factCheckNewsItems.slice(0, 1),
-      ...bingFactCheckItems.slice(0, 2),
-      ...rssItems.slice(0, 3),
+      // Prefer direct Bing publisher URLs first. Google News wrapper resolution
+      // is only a fallback so a blocked wrapper cannot waste the whole request.
       ...bingNewsItems.slice(0, 4),
+      ...bingFactCheckItems.slice(0, 1),
+      ...rssItems.slice(0, 2),
+      ...factCheckNewsItems.slice(0, 1),
       ...factCheckNewsItems.slice(1),
+      ...bingFactCheckItems.slice(1),
+      ...rssItems.slice(2),
     ]) {
       const key = (item.url || item.headline || "").toLowerCase();
       if (!key || seenArticleKeys.has(key)) continue;
       seenArticleKeys.add(key);
       combinedItems.push(item);
     }
-    const candidateItems = combinedItems.slice(0, 5);
+    const candidateItems = combinedItems.slice(0, 4);
     const retrieved = await Promise.all(candidateItems.map((item, index) =>
       fetchNewsEvidence(item, `${claim.id}-N${index + 1}`)
     ));
