@@ -324,11 +324,19 @@ async function extractFromUrl(url) {
 // SYSTEM PROMPT
 // ════════════════════════════════════════════════════════════════════════════
 
-const SYSTEM_PROMPT = `You are an expert AI text detection system. Analyze the text and determine if it was written by a human or an AI.
+const SYSTEM_PROMPT = `You are a cautious AI-written-text analysis assistant. Analyze only the text supplied by the user.
 
-Respond ONLY with valid JSON. 
-CRITICAL: You MUST be extremely brief. The entire response should be less than 400 tokens.
-- "summary": Exactly 1-2 short sentences (max 30 words).
+Important calibration rules:
+- This is a heuristic assessment, not a definitive authorship test. AI probability is an estimate, not a statistically calibrated probability.
+- Do not classify text as AI solely because it is fluent, grammatical, formal, or uses transitions.
+- Use multiple independent textual cues where possible. If cues conflict or evidence is weak, return "Mixed" and/or low confidence.
+- Treat perplexity, burstiness, vocabulary, and sentence-structure scores as qualitative text-based estimates. Do not claim actual token-level perplexity was measured.
+- Do not invent evidence, phrases, or numerical measurements that are absent from the supplied text.
+- Use "Very High" confidence only when several strong and consistent cues support the same verdict.
+
+Respond ONLY with valid JSON.
+CRITICAL: Keep the entire response under 400 tokens.
+- "summary": 1-2 short sentences (max 30 words).
 - "signals" labels: Max 5 words each.
 - "ai_flags", "human_flags", "suspicious_phrases": Max 3 items each, 1-3 words per item.
 
@@ -381,24 +389,48 @@ function parseDetectionJson(raw) {
 }
 
 function normalizeDetectionResult(value, text, modelUsed) {
-  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
-  const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
-  const sentenceCount = sentences.length;
+  const invalidOutput = () => {
+    const err = new Error("The AI model returned an incomplete analysis. Please retry; no result was saved.");
+    err.code = "invalid_detection_output";
+    return err;
+  };
+
+  const rawVerdict = String(value?.verdict || "").toLowerCase();
+  if (!["ai", "human", "mixed"].includes(rawVerdict)) throw invalidOutput();
+
+  const rawAiProbability = Number(value?.ai_probability);
+  if (value?.ai_probability === undefined || !Number.isFinite(rawAiProbability) ||
+      rawAiProbability < 0 || rawAiProbability > 100) {
+    throw invalidOutput();
+  }
+
   const score = n => {
     const v = Number(n);
     return Number.isFinite(v) ? Math.max(0, Math.min(100, Math.round(v))) : 50;
   };
   const validStrings = v => Array.isArray(v) ? v.filter(x => typeof x === "string").slice(0, 10) : [];
   const signalKeys = ["perplexity", "burstiness", "vocabulary", "sentence_structure"];
+  if (!value?.signals || signalKeys.some(key => {
+    const sig = value.signals[key];
+    return !sig || sig.score === undefined || !Number.isFinite(Number(sig.score)) ||
+      Number(sig.score) < 0 || Number(sig.score) > 100 ||
+      typeof sig.label !== "string" || !sig.label.trim();
+  })) {
+    throw invalidOutput();
+  }
+  if (typeof value.summary !== "string" || !value.summary.trim()) throw invalidOutput();
+
+  const wordCount = text.trim().split(/\\s+/).filter(Boolean).length;
+  const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
+  const sentenceCount = sentences.length;
   const signals = {};
   for (const key of signalKeys) {
-    const s = value?.signals?.[key] || {};
+    const s = value.signals[key];
     signals[key] = {
       score: score(s.score),
-      label: typeof s.label === "string" && s.label.trim() ? s.label.slice(0, 80) : "Insufficient signal",
+      label: s.label.slice(0, 80),
     };
   }
-  const rawVerdict = String(value?.verdict || "").toLowerCase();
   const verdict = rawVerdict === "ai" ? "AI" : rawVerdict === "human" ? "Human" : "Mixed";
   const rawConfidence = String(value?.confidence || "").toLowerCase();
   const confidence = ["low", "medium", "high", "very high"].includes(rawConfidence)
@@ -407,17 +439,15 @@ function normalizeDetectionResult(value, text, modelUsed) {
   const avgSentenceLength = Number(value?.avg_sentence_length);
   return {
     verdict,
-    ai_probability: score(value?.ai_probability),
+    ai_probability: score(rawAiProbability),
     confidence,
-    summary: typeof value?.summary === "string" && value.summary.trim()
-      ? value.summary.slice(0, 600)
-      : "The model returned a partial analysis. Treat this result as uncertain.",
+    summary: value.summary.slice(0, 600),
     signals,
-    ai_flags: validStrings(value?.ai_flags),
-    human_flags: validStrings(value?.human_flags),
-    suspicious_phrases: validStrings(value?.suspicious_phrases),
-    word_count: Number.isFinite(Number(value?.word_count)) ? Math.max(0, Math.round(Number(value.word_count))) : wordCount,
-    sentence_count: Number.isFinite(Number(value?.sentence_count)) ? Math.max(0, Math.round(Number(value.sentence_count))) : sentenceCount,
+    ai_flags: validStrings(value.ai_flags),
+    human_flags: validStrings(value.human_flags),
+    suspicious_phrases: validStrings(value.suspicious_phrases),
+    word_count: Number.isFinite(Number(value.word_count)) ? Math.max(0, Math.round(Number(value.word_count))) : wordCount,
+    sentence_count: Number.isFinite(Number(value.sentence_count)) ? Math.max(0, Math.round(Number(value.sentence_count))) : sentenceCount,
     avg_sentence_length: Number.isFinite(avgSentenceLength) ? Math.max(0, avgSentenceLength) : (sentenceCount ? Math.round((wordCount / sentenceCount) * 10) / 10 : wordCount),
     model_used: modelUsed,
   };
@@ -468,7 +498,7 @@ async function callGroqDetection(text) {
       return normalizeDetectionResult(parsed, truncatedText, model);
     } catch (e) {
       lastError = e;
-      const canFallback = i < models.length - 1 && isModelUnavailableError(e);
+      const canFallback = i < models.length - 1 && (isModelUnavailableError(e) || e?.code === "invalid_detection_output");
       if (!canFallback) throw e;
       console.warn(`[GROQ] Model ${model} is unavailable for this API key; trying fallback ${models[i + 1]}.`);
     }
