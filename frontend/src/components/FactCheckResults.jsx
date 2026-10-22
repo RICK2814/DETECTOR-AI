@@ -27,7 +27,7 @@ export default function FactCheckResults({ result, onReset }) {
   const claims = Array.isArray(result?.results) ? result.results : [];
 
   return (
-    <div style={{ animation: "fadeUp 0.4s ease" }}>
+    <div className="fc-results" style={{ animation: "fadeUp 0.4s ease" }}>
       <style>{`
         @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         .fc-source-link { color:var(--accent); text-decoration:none; }
@@ -86,7 +86,7 @@ export default function FactCheckResults({ result, onReset }) {
       {claims.map((item, index) => {
         const badge = verdictStyle(item.verdict);
         return (
-          <Card key={item.id || index} style={{ marginBottom: 16, border: `1px solid ${badge.color}55` }}>
+          <Card key={item.id || index} className="fc-claim-card" style={{ marginBottom: 16, border: `1px solid ${badge.color}55` }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: 18, borderBottom: "1px solid var(--border)" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
@@ -129,7 +129,7 @@ export default function FactCheckResults({ result, onReset }) {
               {Array.isArray(item.sources) && item.sources.length > 0 ? (
                 <div style={{ display: "grid", gap: 10 }}>
                   {item.sources.map((source, sourceIndex) => (
-                    <div key={source.url || sourceIndex} style={{
+                    <div key={source.url || sourceIndex} className="fc-source-card" style={{
                       padding: 12, borderRadius: 8, background: "var(--bg)",
                       border: "1px solid var(--border)",
                     }}>
@@ -162,7 +162,7 @@ export default function FactCheckResults({ result, onReset }) {
         );
       })}
 
-      <Card style={{ padding: 16, marginBottom: 16, border: "1px solid var(--border2)" }}>
+      <Card className="fc-note-card" style={{ padding: 16, marginBottom: 16, border: "1px solid var(--border2)" }}>
         <div style={{ color: "var(--warn)", fontSize: 11, fontWeight: 800, letterSpacing: 1, marginBottom: 6 }}>
           IMPORTANT
         </div>
