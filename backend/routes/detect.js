@@ -371,7 +371,7 @@ function parseDetectionJson(raw) {
 }
 
 function normalizeDetectionResult(value, text, modelUsed) {
-  const wordCount = text.trim().split(/\\s+/).filter(Boolean).length;
+  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
   const sentenceCount = sentences.length;
   const score = n => {
