@@ -11,7 +11,8 @@ const db = require("../db");
 let PDFParse;
 try { PDFParse = require("pdf-parse").PDFParse; } catch(e) {}
 
-const GROQ_MODEL = (process.env.GROQ_MODEL || "openai/gpt-oss-120b").trim();
+const GROQ_MODEL = (process.env.GROQ_MODEL || "llama-3.3-70b-versatile").trim();
+const GROQ_FALLBACK_MODEL = "openai/gpt-oss-120b";
 
 let groqClient;
 function getGroqClient() {
@@ -341,59 +342,128 @@ JSON Structure:
   "avg_sentence_length":<number>
 }`;
 
-async function callGroqDetection(text) {
-  if (!text || text.trim().length < 50) {
-    throw new Error("Text is too short for reliable AI detection.");
+function isJsonModeError(e) {
+  return e?.error?.code === "json_validate_failed" ||
+    e?.code === "json_validate_failed" ||
+    e?.message?.includes("json_validate_failed") ||
+    e?.message?.includes("Failed to generate JSON");
+}
+
+function isModelUnavailableError(e) {
+  const status = e?.status || e?.statusCode || e?.response?.status;
+  const code = e?.error?.code || e?.code || e?.response?.data?.error?.code;
+  const message = String(e?.message || "").toLowerCase();
+  return status === 404 ||
+    code === "model_not_found" ||
+    message.includes("model_not_found") ||
+    message.includes("does not exist or you do not have access") ||
+    message.includes("model is not available");
+}
+
+function parseDetectionJson(raw) {
+  const clean = String(raw || "").replace(/```json/gi, "").replace(/```/g, "").trim();
+  try { return JSON.parse(clean); } catch (_) {
+    const first = clean.indexOf("{");
+    const last = clean.lastIndexOf("}");
+    if (first >= 0 && last > first) return JSON.parse(clean.slice(first, last + 1));
+    throw new Error("The AI model returned an invalid response. Please try again.");
   }
+}
 
-  // Limit input to 4000 chars so the model has ample room to emit complete JSON.
-  // Sending 8000 chars left too little headroom and caused json_validate_failed
-  // ("max completion tokens reached before generating a valid document").
-  const truncatedText = text.slice(0, 4000);
-  console.log(`[GROQ] Analyzing text snippet (${truncatedText.length} chars)`);
+function normalizeDetectionResult(value, text, modelUsed) {
+  const wordCount = text.trim().split(/\\s+/).filter(Boolean).length;
+  const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
+  const sentenceCount = sentences.length;
+  const score = n => {
+    const v = Number(n);
+    return Number.isFinite(v) ? Math.max(0, Math.min(100, Math.round(v))) : 50;
+  };
+  const validStrings = v => Array.isArray(v) ? v.filter(x => typeof x === "string").slice(0, 10) : [];
+  const signalKeys = ["perplexity", "burstiness", "vocabulary", "sentence_structure"];
+  const signals = {};
+  for (const key of signalKeys) {
+    const s = value?.signals?.[key] || {};
+    signals[key] = {
+      score: score(s.score),
+      label: typeof s.label === "string" && s.label.trim() ? s.label.slice(0, 80) : "Insufficient signal",
+    };
+  }
+  const rawVerdict = String(value?.verdict || "").toLowerCase();
+  const verdict = rawVerdict === "ai" ? "AI" : rawVerdict === "human" ? "Human" : "Mixed";
+  const rawConfidence = String(value?.confidence || "").toLowerCase();
+  const confidence = ["low", "medium", "high", "very high"].includes(rawConfidence)
+    ? (rawConfidence === "very high" ? "Very High" : rawConfidence[0].toUpperCase() + rawConfidence.slice(1))
+    : "Low";
+  const avgSentenceLength = Number(value?.avg_sentence_length);
+  return {
+    verdict,
+    ai_probability: score(value?.ai_probability),
+    confidence,
+    summary: typeof value?.summary === "string" && value.summary.trim()
+      ? value.summary.slice(0, 600)
+      : "The model returned a partial analysis. Treat this result as uncertain.",
+    signals,
+    ai_flags: validStrings(value?.ai_flags),
+    human_flags: validStrings(value?.human_flags),
+    suspicious_phrases: validStrings(value?.suspicious_phrases),
+    word_count: Number.isFinite(Number(value?.word_count)) ? Math.max(0, Math.round(Number(value.word_count))) : wordCount,
+    sentence_count: Number.isFinite(Number(value?.sentence_count)) ? Math.max(0, Math.round(Number(value.sentence_count))) : sentenceCount,
+    avg_sentence_length: Number.isFinite(avgSentenceLength) ? Math.max(0, avgSentenceLength) : (sentenceCount ? Math.round((wordCount / sentenceCount) * 10) / 10 : wordCount),
+    model_used: modelUsed,
+  };
+}
 
-  const messages = [
-    { role: "system", content: SYSTEM_PROMPT },
-    { role: "user",   content: `Analyze this text and return ONLY the JSON results:\n\n${truncatedText}` },
-  ];
-
-  // Primary attempt: strict JSON mode with generous token budget
+async function requestDetectionFromModel(model, messages) {
   try {
     const completion = await getGroqClient().chat.completions.create({
-      model: GROQ_MODEL,
+      model,
       messages,
       temperature: 0.1,
       max_tokens: 2048,
       response_format: { type: "json_object" },
     });
-    const raw = completion.choices[0]?.message?.content || "{}";
-    return JSON.parse(raw.replace(/```json|```/g, "").trim());
+    return parseDetectionJson(completion.choices[0]?.message?.content || "{}");
   } catch (e) {
-    // Groq throws json_validate_failed when token limit is hit mid-JSON.
-    // Retry without response_format and parse manually.
-    const isJsonModeError =
-      e?.error?.code === "json_validate_failed" ||
-      e?.message?.includes("json_validate_failed") ||
-      e?.message?.includes("Failed to generate JSON");
-
-    if (!isJsonModeError) throw e;
-
-    console.warn("[GROQ] json_object mode failed — retrying without response_format...");
-    const completion2 = await getGroqClient().chat.completions.create({
-      model: GROQ_MODEL,
+    if (!isJsonModeError(e)) throw e;
+    console.warn(`[GROQ] JSON mode was rejected for ${model}; retrying without response_format.`);
+    const completion = await getGroqClient().chat.completions.create({
+      model,
       messages,
       temperature: 0.1,
       max_tokens: 2048,
     });
-    const raw2 = completion2.choices[0]?.message?.content || "{}";
+    return parseDetectionJson(completion.choices[0]?.message?.content || "{}");
+  }
+}
+
+async function callGroqDetection(text) {
+  if (!text || text.trim().length < 50) {
+    throw new Error("Text is too short for reliable AI detection.");
+  }
+
+  const truncatedText = text.slice(0, 4000);
+  console.log(`[GROQ] Analyzing text snippet (${truncatedText.length} chars)`);
+
+  const messages = [
+    { role: "system", content: SYSTEM_PROMPT },
+    { role: "user", content: `Analyze this text and return ONLY the JSON results:\n\n${truncatedText}` },
+  ];
+
+  const models = [...new Set([GROQ_MODEL, GROQ_FALLBACK_MODEL])];
+  let lastError;
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
     try {
-      const jsonMatch = raw2.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw2];
-      return JSON.parse(jsonMatch[1].trim());
-    } catch (parseErr) {
-      console.error("[GROQ] JSON Parse Error on fallback. Raw output:", raw2);
-      throw new Error("Failed to parse AI detection result. Please try again.");
+      const parsed = await requestDetectionFromModel(model, messages);
+      return normalizeDetectionResult(parsed, truncatedText, model);
+    } catch (e) {
+      lastError = e;
+      const canFallback = i < models.length - 1 && isModelUnavailableError(e);
+      if (!canFallback) throw e;
+      console.warn(`[GROQ] Model ${model} is unavailable for this API key; trying fallback ${models[i + 1]}.`);
     }
   }
+  throw lastError || new Error("AI detection could not be completed.");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
