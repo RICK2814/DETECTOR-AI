@@ -529,6 +529,16 @@ function cleanText(value, max = 500) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
+function getClaimLocale(text) {
+  if (/[\\u0980-\\u09FF]/.test(text)) {
+    return { languageCode: "bn", hl: "bn-IN", gl: "IN", ceid: "IN:bn" };
+  }
+  if (/[\\u0900-\\u097F]/.test(text)) {
+    return { languageCode: "hi", hl: "hi-IN", gl: "IN", ceid: "IN:hi" };
+  }
+  return { languageCode: "en", hl: "en-IN", gl: "IN", ceid: "IN:en" };
+}
+
 async function searchPublishedFactChecks(claim) {
   const apiKey = (process.env.GOOGLE_FACT_CHECK_API_KEY || "").trim();
   if (!apiKey) return [];
@@ -537,7 +547,7 @@ async function searchPublishedFactChecks(claim) {
     const response = await axios.get(
       "https://factchecktools.googleapis.com/v1alpha1/claims:search",
       {
-        params: { query: claim.slice(0, 250), languageCode: "en", pageSize: 3, key: apiKey },
+        params: { query: claim.slice(0, 250), languageCode: getClaimLocale(claim).languageCode, pageSize: 3, key: apiKey },
         timeout: 5000,
         maxContentLength: 800000,
       }
@@ -565,7 +575,7 @@ async function searchNewsRss(claim) {
   try {
     const url = "https://news.google.com/rss/search";
     const response = await axios.get(url, {
-      params: { q: claim.slice(0, 180), hl: "en-IN", gl: "IN", ceid: "IN:en" },
+      params: { q: claim.slice(0, 180), ...getClaimLocale(claim) },
       timeout: 6000,
       maxContentLength: 1500000,
       headers: { "User-Agent": HEADERS["User-Agent"], Accept: "application/rss+xml,application/xml,text/xml,*/*" },
@@ -825,7 +835,7 @@ Use only source_ids that exist in the provided evidence. If evidence is insuffic
       publishedAt: source.publishedAt,
       reviewedClaim: source.reviewedClaim,
       publishedRating: source.rating,
-      text: source.text,
+      text: cleanText(source.text, 900),
       hasFullText: source.hasFullText,
       url: source.url,
     })),
@@ -861,8 +871,22 @@ Use only source_ids that exist in the provided evidence. If evidence is insuffic
     if (selectedSources.length > 0 &&
         selectedSources.every(source => source.kind === "news_report" && !source.hasFullText) &&
         (verdict === "TRUE" || verdict === "FALSE")) {
-      verdict = "UNVERIFIED";
-      confidence = "LOW";
+      // A useful RSS excerpt can support a cautious assessment only when it
+      // independently corroborates the same claim across two publishers.
+      // Headline-only/short snippets still cannot produce a definitive label.
+      const distinctDomains = new Set(selectedSources.map(source => {
+        try { return new URL(source.url).hostname.replace(/^www\\./i, "").toLowerCase(); }
+        catch (_) { return ""; }
+      }).filter(Boolean));
+      const hasSubstantiveExcerpts = selectedSources.every(source =>
+        cleanText(source.evidenceExcerpt || source.text || "", 700).length >= 140
+      );
+      if (distinctDomains.size < 2 || !hasSubstantiveExcerpts) {
+        verdict = "UNVERIFIED";
+        confidence = "LOW";
+      } else if (confidence === "HIGH") {
+        confidence = "MEDIUM";
+      }
     }
 
     return {
