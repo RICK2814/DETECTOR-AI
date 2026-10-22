@@ -5,12 +5,12 @@ import { Card, CardHeader, Spinner } from "../components/UI";
 
 function StatBox({ label, value, color = "var(--accent)", icon }) {
   return (
-    <div style={{
+    <div className="stat-box" style={{
       background: "var(--surface)", border: "1px solid var(--border)",
       borderRadius: 12, padding: "24px 20px", textAlign: "center",
     }}>
       <div style={{ fontSize: 32, marginBottom: 8 }}>{icon}</div>
-      <div style={{ fontFamily: "var(--head)", fontSize: 36, fontWeight: 800, color, lineHeight: 1 }}>
+      <div className="stat-box__value" style={{ fontFamily: "var(--head)", fontSize: 36, fontWeight: 800, color, lineHeight: 1 }}>
         {value ?? "—"}
       </div>
       <div style={{ fontSize: 11, color: "var(--muted)", letterSpacing: 1, textTransform: "uppercase", marginTop: 6 }}>
@@ -68,7 +68,7 @@ export default function Stats() {
   );
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "48px 20px 80px" }}>
+    <main className="stats-page" style={{ maxWidth: 900, margin: "0 auto", padding: "48px 20px 80px" }}>
       <div style={{ marginBottom: 36 }}>
         <h1 style={{ fontFamily: "var(--head)", fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: -1 }}>
           Detection Statistics
@@ -79,7 +79,7 @@ export default function Stats() {
       </div>
 
       {/* Big numbers */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }}>
+      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }}>
         <StatBox icon="🔬" label="Total Scans"    value={stats?.total_scans}  color="var(--accent)"  />
         <StatBox icon="⚠️" label="AI Generated"   value={stats?.total_ai}     color="var(--accent2)" />
         <StatBox icon="✅" label="Human Written"  value={stats?.total_human}  color="var(--accent3)" />
@@ -138,6 +138,6 @@ export default function Stats() {
           <p>No data yet. Run some scans to see statistics here.</p>
         </div>
       )}
-    </div>
+    </main>
   );
 }
