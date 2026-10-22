@@ -801,9 +801,18 @@ Use only source_ids that exist in the provided evidence. If evidence is insuffic
 
 router.post("/fact-check-news", async (req, res) => {
   try {
-    const articleText = typeof req.body?.text === "string" ? req.body.text : "";
+    let articleText = typeof req.body?.text === "string" ? req.body.text.trim() : "";
+    const articleUrl = typeof req.body?.url === "string" ? req.body.url.trim() : "";
+
+    if (!articleText && articleUrl) {
+      if (!/^https?:\\/\\//i.test(articleUrl)) {
+        return res.status(400).json({ error: "Please provide a valid http or https news URL." });
+      }
+      articleText = await extractFromUrl(articleUrl);
+    }
+
     const result = await factCheckArticleText(articleText);
-    res.json(result);
+    res.json({ ...result, articleUrl: articleUrl || null });
   } catch (err) {
     console.error("[fact-check-news]", err && err.stack ? err.stack : err);
     res.status(err.status || 500).json({
