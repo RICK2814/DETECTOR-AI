@@ -1,6 +1,6 @@
 // components/Results.jsx — Ultra Detection Results
 import React, { useState } from "react";
-import { Gauge, SignalBar, VerdictBadge, Card, CardHeader, Button } from "./UI";
+import { Gauge, SignalBar, VerdictBadge, Card, CardHeader, Button, Icon } from "./UI";
 
 const getColor = v =>
   v === "AI" ? "var(--accent2)" : v === "Human" ? "var(--accent3)" : "var(--warn)";
@@ -96,7 +96,7 @@ export default function Results({ result, onReset }) {
           }}>
             <div>
               <div style={{ fontSize:10, color:"var(--muted)", letterSpacing:1, marginBottom:6 }}>
-                📊 STATISTICAL ANALYSIS
+                <Icon name="chart" size={13}/> STATISTICAL ANALYSIS
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                 <div style={{
@@ -116,7 +116,7 @@ export default function Results({ result, onReset }) {
             </div>
             <div>
               <div style={{ fontSize:10, color:"var(--muted)", letterSpacing:1, marginBottom:6 }}>
-                🧠 LLM ENSEMBLE (3 MODELS)
+                <Icon name="brain" size={13}/> LLM ENSEMBLE (3 MODELS)
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                 <div style={{
@@ -196,17 +196,17 @@ export default function Results({ result, onReset }) {
         <CardHeader>Forensic Analysis</CardHeader>
         <div style={{ padding:20 }}>
           {result.ai_flags?.length > 0 && (
-            <Section title="🤖 AI Signals" color="var(--accent2)">
+            <Section title={<><Icon name="bot" size={14}/> AI Signals</>} color="var(--accent2)">
               <FlagList items={result.ai_flags} color="var(--accent2)" />
             </Section>
           )}
           {result.human_flags?.length > 0 && (
-            <Section title="🧑 Human Signals" color="var(--accent3)">
+            <Section title={<><Icon name="user-round" size={14}/> Human Signals</>} color="var(--accent3)">
               <FlagList items={result.human_flags} color="var(--accent3)" />
             </Section>
           )}
           {result.suspicious_phrases?.length > 0 && (
-            <Section title="🚩 Flagged Phrases" color="var(--warn)" last>
+            <Section title={<><Icon name="flag" size={14}/> Flagged Phrases</>} color="var(--warn)" last>
               <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
                 {result.suspicious_phrases.map((p,i) => (
                   <span key={i} style={{
