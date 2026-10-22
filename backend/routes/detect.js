@@ -1022,9 +1022,6 @@ router.post("/fact-check-news", async (req, res) => {
       articleText = await extractFromUrl(articleUrl);
     }
 
-    if (articleUrl && !/^https?:\\/\\//i.test(articleUrl)) {
-      return res.status(400).json({ error: "Please provide a valid http or https news URL." });
-    }
     const result = await factCheckArticleText(articleText, articleUrl);
     res.json({ ...result, articleUrl: articleUrl || null });
   } catch (err) {
