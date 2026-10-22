@@ -42,13 +42,24 @@ export default function FactCheckResults({ result, onReset }) {
         </div>
       </Card>
 
-      {result?.factCheckDatabaseAvailable === false && (
+      {result?.factCheckDatabaseStatus && result.factCheckDatabaseStatus !== "working_with_matches" && (
         <Card style={{ marginBottom: 16, padding: 14, border: "1px solid var(--warn)" }}>
           <div style={{ color: "var(--warn)", fontSize: 11, fontWeight: 800, marginBottom: 6 }}>
-            PUBLISHED FACT-CHECK SEARCH NOT CONFIGURED
+            {result.factCheckDatabaseStatus === "not_configured" ? "PUBLISHED FACT-CHECK SEARCH NOT CONFIGURED" : result.factCheckDatabaseStatus === "working_no_matches" ? "GOOGLE FACT-CHECK API CONNECTED — NO MATCH" : "GOOGLE FACT-CHECK API NEEDS ATTENTION"}
           </div>
           <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.7 }}>
-            News-source search is still enabled, but previously published claim reviews are not being queried. To add that evidence source, configure GOOGLE_FACT_CHECK_API_KEY in Vercel Environment Variables. The key is optional; without usable evidence, a claim will correctly remain UNVERIFIED.
+            {result.factCheckDatabaseStatus === "not_configured"
+              ? "News search is active, but the published fact-check API is not configured."
+              : result.factCheckDatabaseStatus === "working_no_matches"
+                ? "Google accepted the key, but its database did not return an existing fact-check matching these claims. It cannot classify every new claim automatically."
+                : result.factCheckDatabaseStatus === "invalid_key_or_request"
+                  ? "Google rejected the key or request. Check the API key and request configuration."
+                  : result.factCheckDatabaseStatus === "api_disabled_or_key_restricted"
+                    ? "Google returned a permission error. Enable Fact Check Tools API in the same project and check key restrictions."
+                    : result.factCheckDatabaseStatus === "quota_exceeded"
+                      ? "Google Fact Check API quota or rate limit was reached."
+                      : "The Google Fact Check API request failed. Check the Vercel Function Logs."}
+            {result.factCheckDatabaseDetail ? " Details: " + result.factCheckDatabaseDetail : ""}
           </div>
         </Card>
       )}
