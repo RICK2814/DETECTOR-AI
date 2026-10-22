@@ -4,6 +4,21 @@ import { detectText, detectUrl, detectFile } from "../utils/api";
 import Results from "../components/Results";
 import { Card, CardHeader, Button, Spinner } from "../components/UI";
 
+function getReadableError(error) {
+  const candidate =
+    error?.response?.data?.error ??
+    error?.response?.data?.message ??
+    error?.message;
+
+  if (typeof candidate === "string" && candidate.trim()) return candidate;
+  if (candidate && typeof candidate === "object") {
+    if (typeof candidate.message === "string" && candidate.message.trim()) return candidate.message;
+    try { return JSON.stringify(candidate); } catch (_) {}
+  }
+  return "Detection failed. Please try again.";
+}
+
+
 export default function Detect() {
   const [tab,       setTab]       = useState("text");
   const [text,      setText]      = useState("");
@@ -66,7 +81,7 @@ export default function Detect() {
         setLoading(false);
         return;
       }
-      setError(e.response?.data?.error || e.message || "Detection failed.");
+      setError(getReadableError(e));
     } finally {
       setLoading(false);
       setStatusMsg("");
