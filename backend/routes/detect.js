@@ -578,31 +578,111 @@ async function searchPublishedFactChecks(claim) {
   }
 }
 
+function compactClaimQuery(claim, maxWords = 12) {
+  const stopWords = new Set([
+    "about","after","again","against","also","among","because","before","being","between",
+    "could","does","during","from","have","having","into","more","most","only","other",
+    "over","same","some","such","than","that","their","them","there","these","they",
+    "this","those","through","under","until","very","was","were","what","when","where",
+    "which","while","with","would","your","been","will","shall","should","onto","said",
+    "says","according","reportedly","report","claims","claim","news","fact","check","the",
+    "and","for","are","but","not","you","all","any","can","had","her","his","its","our",
+    "out","own","she","too","use","who","why","how","one","two","per","via","did","has",
+    "him","let","may","new","now","off","old","put","see","get"
+  ]);
+  const words = String(claim || "").match(/[\\p{L}\\p{N}][\\p{L}\\p{N}'’-]*/gu) || [];
+  const unique = [];
+  const seen = new Set();
+  for (const word of words) {
+    const normalized = word.toLocaleLowerCase();
+    if (normalized.length < 3 || stopWords.has(normalized) || seen.has(normalized)) continue;
+    seen.add(normalized);
+    unique.push(word);
+    if (unique.length >= maxWords) break;
+  }
+  return unique.join(" ") || String(claim || "").slice(0, 120);
+}
+
 async function searchNewsRss(claim, mode = "news") {
   try {
     const url = "https://news.google.com/rss/search";
+    const compact = compactClaimQuery(claim, 12);
+    const query = mode === "fact_check" ? `"${compact}" fact check` : compact;
     const response = await axios.get(url, {
-      params: { q: mode === "fact_check" ? `${claim.slice(0, 135)} fact check` : claim.slice(0, 180), ...getClaimLocale(claim) },
-      timeout: 6000,
+      params: { q: query, ...getClaimLocale(claim) },
+      timeout: 7000,
       maxContentLength: 1500000,
       headers: { "User-Agent": HEADERS["User-Agent"], Accept: "application/rss+xml,application/xml,text/xml,*/*" },
     });
     const $ = cheerio.load(String(response.data || ""), { xmlMode: true });
     const items = [];
     $("item").each((index, element) => {
-      if (items.length >= 4) return;
+      if (items.length >= 5) return;
       const node = $(element);
       const headline = cleanText(node.find("title").first().text(), 240);
       const link = cleanText(node.find("link").first().text(), 1000);
       const publisher = cleanText(node.find("source").first().text(), 120);
       const publishedAt = cleanText(node.find("pubDate").first().text(), 100);
-      const description = cleanText(node.find("description").first().text().replace(/<[^>]*>/g, " "), 500);
-      if (!headline || !/^https?:\/\//i.test(link)) return;
-      items.push({ headline, url: link, publisher, publishedAt, description, searchType: mode });
+      const description = cleanText(node.find("description").first().text().replace(/<[^>]*>/g, " "), 700);
+      if (!headline || !/^https?:\\/\\//i.test(link)) return;
+      items.push({ headline, url: link, publisher, publishedAt, description, searchType: mode, searchEngine: "Google News" });
     });
     return items;
   } catch (err) {
-    console.warn("[FACT CHECK] News search unavailable:", err.response?.status || err.message);
+    console.warn("[FACT CHECK] Google News search unavailable:", err.response?.status || err.message);
+    return [];
+  }
+}
+
+// Public Bing News RSS provides an independent search path because Google News
+// RSS links can be opaque wrappers that are not always resolvable server-side.
+async function searchBingNewsRss(claim, mode = "news") {
+  try {
+    const compact = compactClaimQuery(claim, 10);
+    const query = mode === "fact_check" ? `"${compact}" fact check` : compact;
+    const locale = getClaimLocale(claim);
+    const response = await axios.get("https://www.bing.com/news/search", {
+      params: {
+        q: query,
+        format: "RSS",
+        setlang: locale.languageCode === "bn" ? "bn" : locale.languageCode === "hi" ? "hi" : "en",
+        cc: "IN",
+      },
+      timeout: 7000,
+      maxContentLength: 1500000,
+      headers: { "User-Agent": HEADERS["User-Agent"], Accept: "application/rss+xml,application/xml,text/xml,*/*" },
+    });
+    const $ = cheerio.load(String(response.data || ""), { xmlMode: true });
+    const items = [];
+    $("item").each((index, element) => {
+      if (items.length >= 5) return;
+      const node = $(element);
+      const headline = cleanText(node.find("title").first().text(), 240);
+      const link = cleanText(node.find("link").first().text(), 1000);
+      const description = cleanText(node.find("description").first().text().replace(/<[^>]*>/g, " "), 700);
+      const publishedAt = cleanText(node.find("pubDate").first().text(), 100);
+      let publisher = cleanText(node.find("source").first().text(), 120);
+      if (!publisher) {
+        const sourceTag = node.children().toArray().find(el => /source/i.test(el.name || ""));
+        if (sourceTag) publisher = cleanText($(sourceTag).text(), 120);
+      }
+      if (!headline || !/^https?:\\/\\//i.test(link)) return;
+      let host = "";
+      try { host = new URL(link).hostname.replace(/^www\\./i, ""); } catch (_) {}
+      if (/(^|\\.)bing\\.com$/i.test(host) || /(^|\\.)news\\.google\\.com$/i.test(host)) return;
+      items.push({
+        headline,
+        url: link,
+        publisher: publisher || host || "News publisher",
+        publishedAt,
+        description,
+        searchType: mode,
+        searchEngine: "Bing News",
+      });
+    });
+    return items;
+  } catch (err) {
+    console.warn("[FACT CHECK] Bing News RSS search unavailable:", err.response?.status || err.message);
     return [];
   }
 }
@@ -831,11 +911,15 @@ async function factCheckArticleText(articleText, articleUrl = "") {
 
   // Retrieve published fact-checks and independent news coverage for every claim.
   const evidenceByClaim = await Promise.all(claims.map(async claim => {
-    const [publishedSearch, rssItems, factCheckNewsItems] = await Promise.all([
+    const [publishedSearch, googleNewsItems, googleFactCheckItems, bingNewsItems, bingFactCheckItems] = await Promise.all([
       searchPublishedFactChecks(claim.text),
       searchNewsRss(claim.text, "news"),
       searchNewsRss(claim.text, "fact_check"),
+      searchBingNewsRss(claim.text, "news"),
+      searchBingNewsRss(claim.text, "fact_check"),
     ]);
+    const rssItems = googleNewsItems;
+    const factCheckNewsItems = googleFactCheckItems;
     const publishedChecks = publishedSearch.checks;
 
     // Mix one targeted fact-check article with one general report when available.
@@ -846,7 +930,9 @@ async function factCheckArticleText(articleText, articleUrl = "") {
     // cannot crowd out all primary/general reporting evidence.
     for (const item of [
       ...factCheckNewsItems.slice(0, 1),
-      ...rssItems.slice(0, 4),
+      ...bingFactCheckItems.slice(0, 2),
+      ...rssItems.slice(0, 3),
+      ...bingNewsItems.slice(0, 4),
       ...factCheckNewsItems.slice(1),
     ]) {
       const key = (item.url || item.headline || "").toLowerCase();
@@ -854,7 +940,7 @@ async function factCheckArticleText(articleText, articleUrl = "") {
       seenArticleKeys.add(key);
       combinedItems.push(item);
     }
-    const candidateItems = combinedItems.slice(0, 3);
+    const candidateItems = combinedItems.slice(0, 5);
     const retrieved = await Promise.all(candidateItems.map((item, index) =>
       fetchNewsEvidence(item, `${claim.id}-N${index + 1}`)
     ));
@@ -863,7 +949,7 @@ async function factCheckArticleText(articleText, articleUrl = "") {
       if (source.url && !uniqueSources.has(source.url)) uniqueSources.set(source.url, source);
     }
     const factCheckSources = publishedChecks.slice(0, 3);
-    const newsSources = retrieved.slice(0, 3);
+    const newsSources = retrieved.slice(0, 5);
     const combined = new Map();
     for (const source of [...factCheckSources, ...newsSources]) {
       if (source.url && !combined.has(source.url)) combined.set(source.url, source);
