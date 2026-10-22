@@ -74,6 +74,7 @@ export default function Results({ result, onReset }) {
             <VerdictBadge verdict={result.verdict} />
             <div style={{ fontSize:11, color:"var(--muted)", margin:"10px 0 4px" }}>
               Confidence: <strong style={{ color:"var(--text)" }}>{result.confidence}</strong>
+              {result.model_used && <span style={{ marginLeft:12, color:"var(--muted)" }}>Model: <code style={{ color:"var(--accent)", fontSize:10 }}>{result.model_used}</code></span>}
               {result.id && <span style={{ marginLeft:12, color:"var(--muted)" }}>
                 ID: <code style={{ color:"var(--accent)", fontSize:10 }}>{result.id.slice(0,8)}</code>
               </span>}
