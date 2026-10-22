@@ -47,6 +47,38 @@ function MissingClerkKeyScreen() {
   );
 }
 
+class AppErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("DetectAI render error:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: "100vh", background: "#0a0c10", color: "#e8eaed", fontFamily: "system-ui, sans-serif", padding: "48px 20px", maxWidth: 640, margin: "0 auto" }}>
+          <h1 style={{ fontSize: 24 }}>DetectAI could not render this page</h1>
+          <p style={{ lineHeight: 1.7, color: "#b8c0cc" }}>
+            The application encountered a display error. Reload the page. If the problem continues, check the latest Vercel deployment and browser console.
+          </p>
+          <button onClick={() => window.location.reload()} style={{ padding: "10px 16px", borderRadius: 8, border: "1px solid #415064", background: "#151922", color: "#e8eaed", cursor: "pointer" }}>
+            Reload page
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const root = document.getElementById("root");
 
 if (!publishableKey) {
@@ -59,11 +91,13 @@ if (!publishableKey) {
 } else {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
-      <ClerkProvider publishableKey={publishableKey}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ClerkProvider>
+      <AppErrorBoundary>
+        <ClerkProvider publishableKey={publishableKey}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ClerkProvider>
+      </AppErrorBoundary>
     </React.StrictMode>
   );
 }
