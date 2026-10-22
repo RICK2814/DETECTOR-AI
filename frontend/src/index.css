@@ -1151,3 +1151,45 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
     color: var(--text) !important; background: none !important;
   }
 }
+
+
+/* Motion choreography fix: entrance animations fade only, so hover transforms
+   remain independently responsive instead of being locked by fill-mode. */
+.detect-page .ui-card,
+.detection-results > .ui-card,
+.fc-results > .ui-card,
+.fc-claim-card,
+.detection-verdict-card,
+.stat-box,
+.scan-row {
+  animation-name: premium-fade;
+  animation-timing-function: var(--ease-out);
+}
+@keyframes premium-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.detect-page .ui-card,
+.detection-results > .ui-card,
+.fc-results > .ui-card,
+.fc-claim-card,
+.detection-verdict-card,
+.stat-box,
+.scan-row {
+  transition-property: transform, border-color, box-shadow, background-color, opacity;
+}
+.fc-claim-card:hover { transform: translateY(-2px); }
+.scan-page .scan-row:hover { transform: translateX(2px); }
+.stat-box:hover { transform: translateY(-5px); }
+.ui-card:hover { transform: translateY(-3px); }
+@media (max-width: 680px) {
+  .ui-card:hover, .stat-box:hover { transform: none; }
+  .scan-page .scan-row:hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detect-page .ui-card, .detection-results > .ui-card, .fc-results > .ui-card,
+  .fc-claim-card, .detection-verdict-card, .stat-box, .scan-row {
+    animation: none !important;
+    transition: none !important;
+  }
+}
