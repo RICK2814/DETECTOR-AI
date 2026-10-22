@@ -50,15 +50,15 @@ export default function FactCheckResults({ result, onReset }) {
       </Card>
 
       {result?.factCheckDatabaseStatus && result.factCheckDatabaseStatus !== "working_with_matches" && !(result?.sourceClassification === "satire" && result?.factCheckDatabaseStatus === "working_no_matches") && (
-        <Card style={{ marginBottom: 16, padding: 14, border: "1px solid var(--warn)" }}>
-          <div style={{ color: "var(--warn)", fontSize: 11, fontWeight: 800, marginBottom: 6 }}>
-            {result.factCheckDatabaseStatus === "not_configured" ? "PUBLISHED FACT-CHECK SEARCH NOT CONFIGURED" : result.factCheckDatabaseStatus === "working_no_matches" ? "GOOGLE FACT-CHECK API CONNECTED — NO MATCH" : "GOOGLE FACT-CHECK API NEEDS ATTENTION"}
+        <Card style={{ marginBottom: 16, padding: 14, border: `1px solid ${result.factCheckDatabaseStatus === "working_no_matches" ? "var(--border)" : "var(--warn)"}` }}>
+          <div style={{ color: result.factCheckDatabaseStatus === "working_no_matches" ? "var(--muted)" : "var(--warn)", fontSize: 11, fontWeight: 800, marginBottom: 6 }}>
+            {result.factCheckDatabaseStatus === "not_configured" ? "PUBLISHED FACT-CHECK SEARCH NOT CONFIGURED" : result.factCheckDatabaseStatus === "working_no_matches" ? "PUBLISHED FACT-CHECK DATABASE: NO MATCH" : "GOOGLE FACT-CHECK API NEEDS ATTENTION"}
           </div>
           <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.7 }}>
             {result.factCheckDatabaseStatus === "not_configured"
-              ? "News search is active, but the published fact-check API is not configured."
+              ? "Live news-source searches are still used, but the published fact-check API is not configured."
               : result.factCheckDatabaseStatus === "working_no_matches"
-                ? "Google accepted the key, but its database did not return an existing fact-check matching these claims. It cannot classify every new claim automatically."
+                ? "No previously published fact-check matched these claims. This is not a verdict: live Google News and Bing News searches are also used, and any retrieved source links are shown below."
                 : result.factCheckDatabaseStatus === "invalid_key_or_request"
                   ? "Google rejected the key or request. Check the API key and request configuration."
                   : result.factCheckDatabaseStatus === "api_disabled_or_key_restricted"
