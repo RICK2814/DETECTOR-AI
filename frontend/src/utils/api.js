@@ -325,6 +325,9 @@ export const detectUrl = async (url, onProgress) => {
 export const detectText = (text) =>
   api.post("/detect/text", { text }).then(r => r.data);
 
+export const factCheckNews = ({ text = "", url = "" } = {}) =>
+  api.post("/detect/fact-check-news", { text, url }).then(r => r.data);
+
 export const detectFile = (file) => {
   const form = new FormData();
   form.append("file", file);
