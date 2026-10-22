@@ -664,18 +664,19 @@ async function searchBingNewsRss(claim, mode = "news") {
     });
     const $ = cheerio.load(String(response.data || ""), { xmlMode: true });
     const items = [];
-    $("item").each((index, element) => {
-      if (items.length >= 6) return;
+
+    // Use a normal async loop: resolving Bing tracking URLs requires await.
+    for (const element of $("item").toArray()) {
+      if (items.length >= 6) break;
       const node = $(element);
       const headline = cleanText(node.find("title").first().text(), 240);
       let link = cleanText(node.find("link").first().text(), 1500);
       const description = cleanText(node.find("description").first().text().replace(/<[^>]*>/g, " "), 800);
       const publishedAt = cleanText(node.find("pubDate").first().text(), 100);
       let publisher = cleanText(node.find("source").first().text(), 120);
+      if (!headline || !link) continue;
 
       // Bing RSS commonly wraps the real story URL in apiclick.aspx?url=...
-      // Previously all bing.com links were discarded before this was extracted,
-      // which could leave every claim with zero independent source URLs.
       try {
         let parsed = new URL(link);
         const host = parsed.hostname.toLowerCase();
@@ -687,30 +688,31 @@ async function searchBingNewsRss(claim, mode = "news") {
           if (isHttpUrl(target)) {
             link = target;
           } else {
-            const redirect = await axios.get(link, {
-              timeout: 4500,
-              maxRedirects: 5,
-              responseType: "text",
-              validateStatus: status => status >= 200 && status < 400,
-              headers: { "User-Agent": HEADERS["User-Agent"], Accept: "text/html,*/*" },
-            });
-            const finalUrl = redirect.request?.res?.responseUrl || "";
-            if (isHttpUrl(finalUrl)) link = finalUrl;
+            // If the redirect did not embed the target, follow it and retain
+            // the final publisher URL rather than dropping every Bing result.
+            try {
+              const redirect = await axios.get(link, {
+                timeout: 4500,
+                maxRedirects: 5,
+                responseType: "text",
+                validateStatus: status => status >= 200 && status < 400,
+                headers: { "User-Agent": HEADERS["User-Agent"], Accept: "text/html,*/*" },
+              });
+              const finalUrl = redirect.request?.res?.responseUrl || "";
+              if (isHttpUrl(finalUrl)) link = finalUrl;
+            } catch (_) {}
           }
           parsed = new URL(link);
         }
-        if (parsed.hostname.toLowerCase() === "news.google.com" || parsed.hostname.toLowerCase().endsWith(".news.google.com")) {
-          // Google News results are handled separately by the Google resolver.
-          return;
-        }
+        if (parsed.hostname.toLowerCase() === "news.google.com" || parsed.hostname.toLowerCase().endsWith(".news.google.com")) continue;
       } catch (_) {
-        return;
+        continue;
       }
-      if (!headline || !isHttpUrl(link)) return;
+      if (!isHttpUrl(link)) continue;
 
       let host = "";
       try { host = new URL(link).hostname.toLowerCase(); } catch (_) {}
-      if (!host || host === "bing.com" || host.endsWith(".bing.com")) return;
+      if (!host || host === "bing.com" || host.endsWith(".bing.com")) continue;
       if (!publisher) publisher = host.startsWith("www.") ? host.slice(4) : host;
       items.push({
         headline,
@@ -721,7 +723,7 @@ async function searchBingNewsRss(claim, mode = "news") {
         searchType: mode,
         searchEngine: "Bing News",
       });
-    });
+    }
     return items;
   } catch (err) {
     console.warn("[FACT CHECK] Bing News RSS search unavailable:", err.response?.status || err.message);
