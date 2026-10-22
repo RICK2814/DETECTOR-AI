@@ -10,6 +10,8 @@ const verdictStyle = verdict => {
       return { color: "var(--accent2)", background: "rgba(255,60,110,0.10)", label: "FALSE", icon: "✕" };
     case "MIXED":
       return { color: "var(--warn)", background: "rgba(255,184,48,0.10)", label: "MIXED / MISLEADING", icon: "⚠" };
+    case "SATIRE":
+      return { color: "var(--warn)", background: "rgba(255,184,48,0.14)", label: "SATIRE / HUMOR", icon: "✦" };
     default:
       return { color: "var(--muted)", background: "rgba(150,160,175,0.08)", label: "UNVERIFIED", icon: "?" };
   }
@@ -38,6 +40,11 @@ export default function FactCheckResults({ result, onReset }) {
           {claims.length} claim{claims.length === 1 ? "" : "s"} reviewed against retrieved news coverage{result?.factCheckDatabaseAvailable ? " and published fact-checks" : ""}.
           <div style={{ marginTop: 4 }}>
             TRUE/FALSE labels require supporting evidence. UNVERIFIED means the available sources were insufficient or did not match the claim well enough.
+            {result?.sourceClassification === "satire" && (
+              <div style={{ marginTop: 8, color: "var(--warn)", fontWeight: 700 }}>
+                SATIRICAL PUBLISHER DETECTED: {result.sourcePublisher}. Claims from this article are marked as satire rather than literal news facts.
+              </div>
+            )}
           </div>
         </div>
       </Card>
@@ -113,7 +120,7 @@ export default function FactCheckResults({ result, onReset }) {
               </p>
 
               <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 }}>
-                Sources {item.sources?.length ? `(${item.sources.length})` : "(none found)"}
+                {item.verdict === "UNVERIFIED" ? "Sources reviewed" : "Sources"} {item.sources?.length ? `(${item.sources.length})` : "(none found)"}
               </div>
 
               {Array.isArray(item.sources) && item.sources.length > 0 ? (
