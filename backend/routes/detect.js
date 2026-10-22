@@ -11,8 +11,18 @@ const db = require("../db");
 let PDFParse;
 try { PDFParse = require("pdf-parse").PDFParse; } catch(e) {}
 
-const GROQ_MODEL = (process.env.GROQ_MODEL || "llama-3.3-70b-versatile").trim();
-const GROQ_FALLBACK_MODEL = "openai/gpt-oss-120b";
+// Groq retired the older Llama 3 IDs for Free/Developer usage.
+// Prefer an active Developer-plan model, but allow an explicitly configured
+// non-retired model for accounts that have access to it.
+const REQUESTED_GROQ_MODEL = (process.env.GROQ_MODEL || "").trim();
+const RETIRED_GROQ_MODEL_IDS = new Set([
+  "llama-3.1-8b-instant",
+  "llama-3.3-70b-versatile",
+]);
+const GROQ_MODEL = (!REQUESTED_GROQ_MODEL || RETIRED_GROQ_MODEL_IDS.has(REQUESTED_GROQ_MODEL))
+  ? "openai/gpt-oss-120b"
+  : REQUESTED_GROQ_MODEL;
+const GROQ_FALLBACK_MODEL = "openai/gpt-oss-20b";
 
 let groqClient;
 function getGroqClient() {
