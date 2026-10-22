@@ -1,5 +1,8 @@
 // db.js — SQLite database setup using sql.js (pure JS, no native build needed)
-const initSqlJs = require("sql.js");
+// Use sql.js's self-contained build so Vercel does not need to bundle a
+// separate sql-wasm.wasm asset. The default build fails in this deployment
+// because that binary is omitted from the serverless function bundle.
+const initSqlJs = require("sql.js/dist/sql-wasm-inline.js");
 const path = require("path");
 const fs   = require("fs");
 
