@@ -526,7 +526,7 @@ async function callGroqDetection(text) {
 // ════════════════════════════════════════════════════════════════════════════
 
 function cleanText(value, max = 500) {
-  return String(value || "").replace(/\\s+/g, " ").trim().slice(0, max);
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
 async function searchPublishedFactChecks(claim) {
@@ -554,7 +554,7 @@ async function searchPublishedFactChecks(claim) {
       rating: cleanText(review.textualRating, 100),
       text: cleanText(review.textualRating ? `Published rating: ${review.textualRating}` : "", 300),
       hasFullText: false,
-    })).filter(x => /^https?:\\/\\//i.test(x.url || "")));
+    })).filter(x => /^https?:\/\//i.test(x.url || "")));
   } catch (err) {
     console.warn("[FACT CHECK] Google Fact Check search unavailable:", err.response?.status || err.message);
     return [];
@@ -580,7 +580,7 @@ async function searchNewsRss(claim) {
       const publisher = cleanText(node.find("source").first().text(), 120);
       const publishedAt = cleanText(node.find("pubDate").first().text(), 100);
       const description = cleanText(node.find("description").first().text().replace(/<[^>]*>/g, " "), 500);
-      if (!headline || !/^https?:\\/\\//i.test(link)) return;
+      if (!headline || !/^https?:\/\//i.test(link)) return;
       items.push({ headline, url: link, publisher, publishedAt, description });
     });
     return items;
@@ -631,7 +631,7 @@ async function fetchNewsEvidence(item, id) {
     const body = pageText.length > description.length + 80 ? pageText : description;
 
     // Preserve the original publisher URL after redirects where possible.
-    const sourceUrl = /^https?:\\/\\//i.test(finalUrl) && !/news\\.google\\.com/i.test(finalUrl)
+    const sourceUrl = /^https?:\/\//i.test(finalUrl) && !/news\.google\.com/i.test(finalUrl)
       ? finalUrl
       : item.url;
 
@@ -667,7 +667,7 @@ async function callFactCheckJson(messages) {
 
 async function factCheckArticleText(articleText) {
   const input = cleanText(articleText, 18000);
-  if (input.split(/\\s+/).filter(Boolean).length < 20) {
+  if (input.split(/\s+/).filter(Boolean).length < 20) {
     const err = new Error("Please provide at least 20 words of news text or factual claims.");
     err.status = 400;
     throw err;
@@ -805,7 +805,7 @@ router.post("/fact-check-news", async (req, res) => {
     const articleUrl = typeof req.body?.url === "string" ? req.body.url.trim() : "";
 
     if (!articleText && articleUrl) {
-      if (!/^https?:\\/\\//i.test(articleUrl)) {
+      if (!/^https?:\/\//i.test(articleUrl)) {
         return res.status(400).json({ error: "Please provide a valid http or https news URL." });
       }
       articleText = await extractFromUrl(articleUrl);
