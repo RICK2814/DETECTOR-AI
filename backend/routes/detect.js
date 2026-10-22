@@ -564,7 +564,7 @@ async function searchPublishedFactChecks(claim) {
       rating: cleanText(review.textualRating, 100),
       text: cleanText(review.textualRating ? `Published rating: ${review.textualRating}` : "", 300),
       hasFullText: false,
-    })).filter(x => /^https?:\\/\\//i.test(x.url || "")));
+    })).filter(x => /^https?:\/\//i.test(x.url || "")));
     return { checks, status: checks.length ? "working_with_matches" : "working_no_matches" };
   } catch (err) {
     const httpStatus = Number(err.response?.status || 0);
