@@ -590,12 +590,95 @@ async function searchNewsRss(claim) {
   }
 }
 
+// Google News RSS items are wrapper URLs, not publisher article URLs.
+// Resolve the wrapper with Google's current article-page signature flow so the
+// fact checker can inspect the actual publisher page rather than a Google shell.
+async function resolveGoogleNewsArticleUrl(articleUrl) {
+  let parsed;
+  try { parsed = new URL(articleUrl); } catch (_) { return null; }
+  if (!/(^|\\.)news\\.google\\.com$/i.test(parsed.hostname)) return articleUrl;
+
+  const userAgent = HEADERS["User-Agent"];
+  try {
+    const pageResponse = await axios.get(articleUrl, {
+      timeout: 9000,
+      maxRedirects: 5,
+      maxContentLength: 3500000,
+      headers: {
+        "User-Agent": userAgent,
+        "Accept": "text/html,application/xhtml+xml,*/*",
+        "Cookie": "CONSENT=YES+cb; SOCS=CAI",
+      },
+    });
+    const pageHtml = typeof pageResponse.data === "string" ? pageResponse.data : String(pageResponse.data || "");
+    const $ = cheerio.load(pageHtml);
+    const articleNode = $("[data-n-a-id][data-n-a-ts][data-n-a-sg]").first();
+    const articleId = articleNode.attr("data-n-a-id") || parsed.pathname.split("/").filter(Boolean).pop();
+    const timestamp = articleNode.attr("data-n-a-ts");
+    const signature = articleNode.attr("data-n-a-sg");
+
+    if (!articleId || !timestamp || !signature) {
+      console.warn("[FACT CHECK] Google News article signature not found; refusing to treat wrapper as publisher source.");
+      return null;
+    }
+
+    const innerRequest = [
+      "garturlreq",
+      [["X", "X", ["X", "X"], null, null, 1, 1, "US:en", null, 1, null, null, null, null, null, 0, 1],
+       "X", "X", 1, [1, 1, 1], 1, 1, null, 0, 0, null, 0],
+      articleId,
+      Number(timestamp),
+      signature,
+    ];
+    const rpcPayload = JSON.stringify([[[
+      "Fbv4je",
+      JSON.stringify(innerRequest),
+      "null",
+      "generic",
+    ]]]);
+    const rpcResponse = await axios.post(
+      "https://news.google.com/_/DotsSplashUi/data/batchexecute?rpcids=Fbv4je",
+      new URLSearchParams({ "f.req": rpcPayload }).toString(),
+      {
+        timeout: 9000,
+        maxContentLength: 500000,
+        headers: {
+          "User-Agent": userAgent,
+          "Referer": "https://news.google.com/",
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          "Cookie": "CONSENT=YES+cb; SOCS=CAI",
+        },
+      }
+    );
+
+    const responseText = String(rpcResponse.data || "");
+    const jsonStart = responseText.indexOf("[[");
+    if (jsonStart < 0) return null;
+    const rpcRows = JSON.parse(responseText.slice(jsonStart));
+    const row = Array.isArray(rpcRows?.[0])
+      ? rpcRows[0].find(entry => Array.isArray(entry) && entry[0] === "wrb.fr" && entry[1] === "Fbv4je")
+      : null;
+    if (!row || typeof row[2] !== "string") return null;
+    const resolved = JSON.parse(row[2]);
+    const publisherUrl = Array.isArray(resolved) && typeof resolved[1] === "string" ? resolved[1] : null;
+    if (!publisherUrl || !/^https?:\\/\\//i.test(publisherUrl)) return null;
+    const resolvedHost = new URL(publisherUrl).hostname;
+    if (/(^|\\.)news\\.google\\.com$/i.test(resolvedHost)) return null;
+    return publisherUrl;
+  } catch (err) {
+    console.warn("[FACT CHECK] Google News URL resolution failed:", err.response?.status || err.message);
+    return null;
+  }
+}
+
 async function fetchNewsEvidence(item, id) {
+  const publisherUrl = await resolveGoogleNewsArticleUrl(item.url);
+  const resolvedUrl = publisherUrl || (/(^|\\.)news\\.google\\.com$/i.test(new URL(item.url).hostname) ? null : item.url);
   const base = {
     id,
     kind: "news_report",
     title: item.headline,
-    url: item.url,
+    url: resolvedUrl,
     publisher: item.publisher || "Publisher shown in Google News",
     publishedAt: item.publishedAt || null,
     reviewedClaim: "",
@@ -604,15 +687,18 @@ async function fetchNewsEvidence(item, id) {
     hasFullText: false,
   };
 
+  // Do not cite a Google News wrapper as if it were the original publisher.
+  if (!resolvedUrl) return { ...base, url: null, hasFullText: false };
+
   try {
-    const response = await axios.get(item.url, {
+    const response = await axios.get(resolvedUrl, {
       timeout: 4500,
       maxRedirects: 5,
       maxContentLength: 2500000,
       headers: { "User-Agent": HEADERS["User-Agent"], Accept: "text/html,application/xhtml+xml,text/plain,*/*" },
       validateStatus: status => status >= 200 && status < 400,
     });
-    const finalUrl = response.request?.res?.responseUrl || item.url;
+    const finalUrl = response.request?.res?.responseUrl || resolvedUrl;
     const contentType = String(response.headers?.["content-type"] || "").toLowerCase();
     if (!contentType.includes("html") && !contentType.includes("text")) {
       return { ...base, url: finalUrl };
@@ -633,7 +719,7 @@ async function fetchNewsEvidence(item, id) {
     // Preserve the original publisher URL after redirects where possible.
     const sourceUrl = /^https?:\/\//i.test(finalUrl) && !/news\.google\.com/i.test(finalUrl)
       ? finalUrl
-      : item.url;
+      : resolvedUrl;
 
     return {
       ...base,
