@@ -578,6 +578,15 @@ async function searchPublishedFactChecks(claim) {
   }
 }
 
+function isHttpUrl(value) {
+  try {
+    const parsed = new URL(String(value || ""));
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch (_) {
+    return false;
+  }
+}
+
 function compactClaimQuery(claim, maxWords = 12) {
   const stopWords = new Set([
     "about","after","again","against","also","among","because","before","being","between",
@@ -649,32 +658,64 @@ async function searchBingNewsRss(claim, mode = "news") {
         setlang: locale.languageCode === "bn" ? "bn" : locale.languageCode === "hi" ? "hi" : "en",
         cc: "IN",
       },
-      timeout: 7000,
+      timeout: 8000,
       maxContentLength: 1500000,
       headers: { "User-Agent": HEADERS["User-Agent"], Accept: "application/rss+xml,application/xml,text/xml,*/*" },
     });
     const $ = cheerio.load(String(response.data || ""), { xmlMode: true });
     const items = [];
     $("item").each((index, element) => {
-      if (items.length >= 5) return;
+      if (items.length >= 6) return;
       const node = $(element);
       const headline = cleanText(node.find("title").first().text(), 240);
-      const link = cleanText(node.find("link").first().text(), 1000);
-      const description = cleanText(node.find("description").first().text().replace(/<[^>]*>/g, " "), 700);
+      let link = cleanText(node.find("link").first().text(), 1500);
+      const description = cleanText(node.find("description").first().text().replace(/<[^>]*>/g, " "), 800);
       const publishedAt = cleanText(node.find("pubDate").first().text(), 100);
       let publisher = cleanText(node.find("source").first().text(), 120);
-      if (!publisher) {
-        const sourceTag = node.children().toArray().find(el => /source/i.test(el.name || ""));
-        if (sourceTag) publisher = cleanText($(sourceTag).text(), 120);
+
+      // Bing RSS commonly wraps the real story URL in apiclick.aspx?url=...
+      // Previously all bing.com links were discarded before this was extracted,
+      // which could leave every claim with zero independent source URLs.
+      try {
+        let parsed = new URL(link);
+        const host = parsed.hostname.toLowerCase();
+        if (host === "bing.com" || host.endsWith(".bing.com")) {
+          let target = parsed.searchParams.get("url") || parsed.searchParams.get("u") || "";
+          if (target.startsWith("a1")) {
+            try { target = Buffer.from(target.slice(2), "base64").toString("utf8"); } catch (_) {}
+          }
+          if (isHttpUrl(target)) {
+            link = target;
+          } else {
+            const redirect = await axios.get(link, {
+              timeout: 4500,
+              maxRedirects: 5,
+              responseType: "text",
+              validateStatus: status => status >= 200 && status < 400,
+              headers: { "User-Agent": HEADERS["User-Agent"], Accept: "text/html,*/*" },
+            });
+            const finalUrl = redirect.request?.res?.responseUrl || "";
+            if (isHttpUrl(finalUrl)) link = finalUrl;
+          }
+          parsed = new URL(link);
+        }
+        if (parsed.hostname.toLowerCase() === "news.google.com" || parsed.hostname.toLowerCase().endsWith(".news.google.com")) {
+          // Google News results are handled separately by the Google resolver.
+          return;
+        }
+      } catch (_) {
+        return;
       }
-      if (!headline || !/^https?:\/\//i.test(link)) return;
+      if (!headline || !isHttpUrl(link)) return;
+
       let host = "";
       try { host = new URL(link).hostname.toLowerCase(); } catch (_) {}
-      if (host === "bing.com" || host.endsWith(".bing.com") || host === "news.google.com" || host.endsWith(".news.google.com")) return;
+      if (!host || host === "bing.com" || host.endsWith(".bing.com")) return;
+      if (!publisher) publisher = host.startsWith("www.") ? host.slice(4) : host;
       items.push({
         headline,
         url: link,
-        publisher: publisher || host.replace(/^www\./i, "") || "News publisher",
+        publisher,
         publishedAt,
         description,
         searchType: mode,
@@ -707,44 +748,58 @@ async function searchDuckDuckGoWeb(claim, mode = "web") {
     });
     const $ = cheerio.load(String(response.data || ""));
     const items = [];
-    $(".result").each((index, element) => {
-      if (items.length >= 6) return;
-      const node = $(element);
-      const anchor = node.find("a.result__a").first();
+    // DDG has changed its result markup over time; support the classic HTML,
+    // its newer test IDs, and title links inside result containers.
+    let anchors = $("a.result__a, a[data-testid='result-title-a'], .result__title a").toArray();
+    if (!anchors.length) anchors = $(".result a[href]").toArray();
+
+    for (const element of anchors) {
+      if (items.length >= 6) break;
+      const anchor = $(element);
       const headline = cleanText(anchor.text(), 240);
-      let link = cleanText(anchor.attr("href"), 1200);
+      let link = cleanText(anchor.attr("href"), 1500);
+      if (!headline || !link) continue;
       if (link.startsWith("//")) link = "https:" + link;
+
       try {
         const parsed = new URL(link);
-        const parsedHost = parsed.hostname.toLowerCase();
-        if ((parsedHost === "duckduckgo.com" || parsedHost.endsWith(".duckduckgo.com")) && parsed.pathname.includes("/l/")) {
+        const host = parsed.hostname.toLowerCase();
+        if ((host === "duckduckgo.com" || host.endsWith(".duckduckgo.com")) && parsed.pathname.includes("/l/")) {
           const target = parsed.searchParams.get("uddg");
-          if (target) link = target;
+          if (target && isHttpUrl(target)) link = target;
         }
-      } catch (_) { return; }
-      const description = cleanText(node.find(".result__snippet").first().text(), 850);
-      if (!headline) return;
+      } catch (_) { continue; }
+
       let destination;
-      try { destination = new URL(link); } catch (_) { return; }
-      if (destination.protocol !== "http:" && destination.protocol !== "https:") return;
+      try { destination = new URL(link); } catch (_) { continue; }
+      if (!isHttpUrl(link)) continue;
       const host = destination.hostname.toLowerCase();
-      if (!host || host === "duckduckgo.com" || host.endsWith(".duckduckgo.com")) return;
+      if (!host || host === "duckduckgo.com" || host.endsWith(".duckduckgo.com")) continue;
+
+      let resultNode = anchor.closest(".result, [data-testid='result']");
+      if (!resultNode.length) resultNode = anchor.parent().parent();
+      const description = cleanText(
+        resultNode.find(".result__snippet, .result-snippet, [data-testid='result-snippet']").first().text(),
+        900
+      );
+      const publisher = host.startsWith("www.") ? host.slice(4) : host;
       items.push({
         headline,
-        url: link,
-        publisher: host,
+        url: destination.href,
+        publisher,
         publishedAt: "",
         description,
         searchType: mode,
         searchEngine: "DuckDuckGo Web Search",
       });
-    });
+    }
     return items;
   } catch (err) {
     console.warn("[FACT CHECK] General web search unavailable:", err.response?.status || err.message);
     return [];
   }
 }
+
 
 // Google News RSS items are wrapper URLs, not publisher article URLs.
 // Resolve the wrapper with Google's current article-page signature flow so the
@@ -829,7 +884,7 @@ async function resolveGoogleNewsArticleUrl(articleUrl) {
 
 async function fetchNewsEvidence(item, id) {
   const publisherUrl = await resolveGoogleNewsArticleUrl(item.url);
-  const resolvedUrl = publisherUrl || (/(^|\.)news\.google\.com$/i.test(new URL(item.url).hostname) ? null : item.url);
+  const resolvedUrl = publisherUrl || item.url;
   const base = {
     id,
     kind: item.searchEngine === "DuckDuckGo Web Search" ? "web_search_result" : "news_report",
@@ -843,7 +898,9 @@ async function fetchNewsEvidence(item, id) {
     hasFullText: false,
   };
 
-  // Do not cite a Google News wrapper as if it were the original publisher.
+  // If Google News URL resolution fails, keep the search result link/snippet
+  // visible for transparency; the evidence gate still prevents a snippet alone
+  // from producing TRUE/FALSE without independent corroboration.
   if (!resolvedUrl) return { ...base, url: null, hasFullText: false };
 
   try {
@@ -970,13 +1027,14 @@ async function factCheckArticleText(articleText, articleUrl = "") {
 
   // Retrieve published fact-checks and independent news coverage for every claim.
   const evidenceByClaim = await Promise.all(claims.map(async claim => {
-    const [publishedSearch, googleNewsItems, googleFactCheckItems, bingNewsItems, bingFactCheckItems, webSearchItems] = await Promise.all([
+    const [publishedSearch, googleNewsItems, googleFactCheckItems, bingNewsItems, bingFactCheckItems, webSearchItems, webFactCheckItems] = await Promise.all([
       searchPublishedFactChecks(claim.text),
       searchNewsRss(claim.text, "news"),
       searchNewsRss(claim.text, "fact_check"),
       searchBingNewsRss(claim.text, "news"),
       searchBingNewsRss(claim.text, "fact_check"),
       searchDuckDuckGoWeb(claim.text, "web"),
+      searchDuckDuckGoWeb(claim.text, "fact_check"),
     ]);
     const rssItems = googleNewsItems;
     const factCheckNewsItems = googleFactCheckItems;
@@ -989,7 +1047,8 @@ async function factCheckArticleText(articleText, articleUrl = "") {
     // Reserve space for general news reporting so a noisy fact-check search
     // cannot crowd out all primary/general reporting evidence.
     for (const item of [
-      ...webSearchItems.slice(0, 4),
+      ...webSearchItems.slice(0, 3),
+      ...webFactCheckItems.slice(0, 2),
       // Prefer direct publisher URLs next; Google News wrapper resolution is
       // used later because opaque wrappers can fail in serverless functions.
       ...bingNewsItems.slice(0, 3),
@@ -1075,6 +1134,27 @@ Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sou
     { role: "user", content: JSON.stringify({ input: input.slice(0, 1800), evidence: evidencePayload }) },
   ]);
   const judgedResults = Array.isArray(judged?.results) ? judged.results : [];
+
+  const relevanceStopWords = new Set([
+    "about","after","again","also","and","are","because","been","before","being","but",
+    "can","did","does","for","from","had","has","have","her","his","into","its","more",
+    "not","now","of","on","over","said","says","she","that","the","their","them","there",
+    "these","they","this","those","was","were","with","would","year","years"
+  ]);
+  function evidenceTerms(value) {
+    const words = String(value || "").toLowerCase().match(/[A-Za-z0-9\u0980-\u09FF\u0900-\u097F]+/g) || [];
+    return new Set(words.filter(word => word.length >= 3 && !relevanceStopWords.has(word)));
+  }
+  function sourceRelevanceScore(claimText, source) {
+    const claimTerms = evidenceTerms(claimText);
+    const sourceTerms = evidenceTerms([
+      source.title, source.publisher, source.reviewedClaim, source.text, source.evidenceExcerpt
+    ].join(" "));
+    if (!claimTerms.size || !sourceTerms.size) return 0;
+    let overlap = 0;
+    for (const term of claimTerms) if (sourceTerms.has(term)) overlap++;
+    return overlap / Math.min(6, claimTerms.size);
+  }
   const allowedVerdicts = new Set(["TRUE", "FALSE", "MIXED", "UNVERIFIED", "SATIRE"]);
   const allowedConfidence = new Set(["LOW", "MEDIUM", "HIGH"]);
 
@@ -1087,10 +1167,29 @@ Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sou
 
     const sourcesById = new Map(claim.sources.map(source => [source.id, source]));
     const selectedIds = Array.isArray(match.source_ids) ? match.source_ids : [];
-    const selectedSources = selectedIds
+    const modelSelectedSources = selectedIds
       .map(id => sourcesById.get(String(id)))
       .filter(Boolean)
       .slice(0, 4);
+    // Models can occasionally omit or mistype source IDs even when they were
+    // given evidence. Rank retrieved candidates against the precise claim so
+    // those evidence links are not silently lost in the final UI.
+    const rankedSources = claim.sources
+      .map(source => ({ source, score: sourceRelevanceScore(claim.text, source) }))
+      .filter(entry => entry.score >= 0.20)
+      .sort((a, b) => b.score - a.score);
+    const fallbackSources = [];
+    const fallbackHosts = new Set();
+    for (const entry of rankedSources) {
+      let host = "";
+      try { host = new URL(entry.source.url).hostname.toLowerCase(); } catch (_) {}
+      if (!entry.source.url) continue;
+      if (host && fallbackHosts.has(host)) continue;
+      fallbackSources.push(entry.source);
+      if (host) fallbackHosts.add(host);
+      if (fallbackSources.length >= 3) break;
+    }
+    const selectedSources = modelSelectedSources.length ? modelSelectedSources : fallbackSources;
 
     // No cited evidence must never produce a definitive verdict.
     if (selectedSources.length === 0 && (verdict === "TRUE" || verdict === "FALSE")) {
