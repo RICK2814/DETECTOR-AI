@@ -384,7 +384,9 @@ function parseDetectionJson(raw) {
     const first = clean.indexOf("{");
     const last = clean.lastIndexOf("}");
     if (first >= 0 && last > first) return JSON.parse(clean.slice(first, last + 1));
-    throw new Error("The AI model returned an invalid response. Please try again.");
+    const err = new Error("The AI model returned an invalid response. Please try again.");
+    err.code = "invalid_detection_output";
+    throw err;
   }
 }
 
