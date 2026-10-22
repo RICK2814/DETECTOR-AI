@@ -143,7 +143,7 @@ export default function Detect() {
 
   // ── inline styles ──
   const S = {
-    page:     { maxWidth:820, margin:"0 auto", padding:"48px 20px 80px" },
+    page:     { maxWidth:1000, margin:"0 auto", padding:"48px 20px 80px" },
     hero:     { textAlign:"center", marginBottom:44 },
     h1:       { fontFamily:"var(--head)", fontSize:"clamp(28px,5vw,48px)", fontWeight:800,
                 letterSpacing:-1.5, color:"#fff", lineHeight:1.1, marginBottom:12 },
@@ -203,9 +203,10 @@ export default function Detect() {
   };
 
   return (
-    <div style={S.page}>
+    <main className="detect-page" style={S.page}>
       {/* Hero */}
-      <div style={S.hero}>
+      <div className="detect-hero" style={S.hero}>
+        <div className="detect-hero__eyebrow"><span className="detect-hero__eyebrow-dot" /> Real-time analysis <span aria-hidden="true">·</span> Evidence-led results</div>
         <h1 style={S.h1}>
           {mode === "ai" ? <>Is this text <span style={S.accent}>AI-generated?</span></> : <>Is this news <span style={S.accent}>true or false?</span></>}
         </h1>
@@ -217,7 +218,7 @@ export default function Detect() {
       </div>
 
       {/* Feature selector — keeps the original page styling and animation system */}
-      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
+      <div className="detect-mode-switcher" style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
         {[
           ["ai", "🔎", "AI Text Detection"],
           ["factcheck", "📰", "News Fact Check"],
@@ -225,6 +226,7 @@ export default function Detect() {
           <button
             key={id}
             type="button"
+            aria-pressed={mode === id}
             onClick={() => switchMode(id)}
             style={{
               padding: "11px 18px", borderRadius: 8, cursor: "pointer",
@@ -245,18 +247,19 @@ export default function Detect() {
         <Card>
           <CardHeader>Input Source</CardHeader>
 
-          <div style={S.tabs}>
+          <div className="detect-tabs" style={S.tabs}>
             {[["text","✏️","Paste Text"],["url","🌐","From URL"],["file","📁","Upload File"]].map(([id,ic,lb]) => (
-              <button key={id} onClick={() => { setTab(id); setShowPasteFallback(false); setError(null); }} style={S.tab(tab===id)}>
+              <button key={id} type="button" aria-pressed={tab === id} onClick={() => { setTab(id); setShowPasteFallback(false); setError(null); }} style={S.tab(tab===id)}>
                 {ic} {lb}
               </button>
             ))}
           </div>
 
-          <div style={S.input}>
+          <div className="detect-input" style={S.input}>
             {/* TEXT TAB */}
             {tab === "text" && (
               <textarea
+                className="detect-textarea"
                 value={text} onChange={e => setText(e.target.value)}
                 placeholder="Paste the text you want to analyze here… (minimum 20 words)"
                 style={S.textarea}
@@ -269,6 +272,7 @@ export default function Detect() {
             {tab === "url" && (
               <div>
                 <input
+                  className="detect-url-input"
                   type="url" value={url} onChange={e => { setUrl(e.target.value); setShowPasteFallback(false); setError(null); }}
                   placeholder="https://example.com/article"
                   style={S.urlInput}
@@ -288,6 +292,7 @@ export default function Detect() {
                       <strong style={{ color:"var(--text)" }}>Open the page, select all text (Ctrl+A / Cmd+A), copy it, then paste below:</strong>
                     </div>
                     <textarea
+                      className="detect-textarea"
                       value={pastedText} onChange={e => setPastedText(e.target.value)}
                       placeholder="Paste the article text here…"
                       style={{ ...S.textarea, minHeight:150, borderColor: pastedWc >= 20 ? "var(--accent3)" : "var(--border2)" }}
@@ -317,6 +322,7 @@ export default function Detect() {
                 onDragOver={e => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleDrop}
+                className="detect-dropzone"
                 style={S.drop(dragging)}
               >
                 <input ref={fileRef} type="file" accept=".txt,.md,.html,.htm,.pdf"
@@ -332,9 +338,9 @@ export default function Detect() {
             )}
           </div>
 
-          <div style={S.actions}>
+          <div className="detect-actions" style={S.actions}>
             {tab === "text" && (
-              <div style={S.wc(wordCount >= 20)}>
+              <div className="detect-word-count" style={S.wc(wordCount >= 20)}>
                 {wordCount} words{wordCount > 0 && wordCount < 20 ? ` · need ${20 - wordCount} more` : ""}{wordCount >= 20 ? " · ready ✓" : ""}
               </div>
             )}
@@ -349,7 +355,7 @@ export default function Detect() {
       {mode === "factcheck" && !factCheckResult && !factLoading && (
         <Card>
           <CardHeader>News Input</CardHeader>
-          <div style={S.tabs}>
+          <div className="detect-tabs" style={S.tabs}>
             {[
               ["text", "✏️", "Paste News Text"],
               ["url", "🌐", "From URL"],
@@ -357,6 +363,7 @@ export default function Detect() {
               <button
                 key={id}
                 type="button"
+                aria-pressed={factInputTab === id}
                 onClick={() => { setFactInputTab(id); setFactCheckError(null); }}
                 style={S.tab(factInputTab === id)}
               >
@@ -364,9 +371,10 @@ export default function Detect() {
               </button>
             ))}
           </div>
-          <div style={S.input}>
+          <div className="detect-input" style={S.input}>
             {factInputTab === "text" ? (
               <textarea
+                className="detect-textarea"
                 value={factText}
                 onChange={e => { setFactText(e.target.value); setFactCheckError(null); }}
                 placeholder="Paste the news article or factual claims here… (minimum 20 words)"
@@ -377,6 +385,7 @@ export default function Detect() {
             ) : (
               <>
                 <input
+                  className="detect-url-input"
                   type="url"
                   value={factUrl}
                   onChange={e => { setFactUrl(e.target.value); setFactCheckError(null); }}
@@ -392,9 +401,9 @@ export default function Detect() {
               </>
             )}
           </div>
-          <div style={S.actions}>
+          <div className="detect-actions" style={S.actions}>
             {factInputTab === "text" && (
-              <div style={S.wc(factTextWc >= 20)}>
+              <div className="detect-word-count" style={S.wc(factTextWc >= 20)}>
                 {factTextWc} words{factTextWc > 0 && factTextWc < 20 ? ` · need ${20 - factTextWc} more` : ""}{factTextWc >= 20 ? " · ready ✓" : ""}
               </div>
             )}
@@ -419,7 +428,7 @@ export default function Detect() {
           <div style={S.loadBox}>
             <Spinner size={72} />
             <div style={S.loadText}>Checking news claims…</div>
-            <div style={S.statusBx}>Extracting claims and checking available source evidence</div>
+            <div className="status-box" style={S.statusBx}>Extracting claims and checking available source evidence</div>
           </div>
         </Card>
       )}
@@ -434,7 +443,7 @@ export default function Detect() {
           <div style={S.loadBox}>
             <Spinner size={72} />
             <div style={S.loadText}>Scanning…</div>
-            {statusMsg && <div style={S.statusBx}>{statusMsg}</div>}
+            {statusMsg && <div className="status-box" style={S.statusBx}>{statusMsg}</div>}
           </div>
         </Card>
       )}
@@ -451,6 +460,6 @@ export default function Detect() {
 
       {/* Results */}
       {mode === "ai" && result && <Results result={result} onReset={reset} />}
-    </div>
+    </main>
   );
 }
