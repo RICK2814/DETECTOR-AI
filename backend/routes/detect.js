@@ -716,16 +716,19 @@ async function searchDuckDuckGoWeb(claim, mode = "web") {
       if (link.startsWith("//")) link = "https:" + link;
       try {
         const parsed = new URL(link);
-        if (/(^|\\.)duckduckgo\\.com$/i.test(parsed.hostname) && parsed.pathname.includes("/l/")) {
+        const parsedHost = parsed.hostname.toLowerCase();
+        if ((parsedHost === "duckduckgo.com" || parsedHost.endsWith(".duckduckgo.com")) && parsed.pathname.includes("/l/")) {
           const target = parsed.searchParams.get("uddg");
-          if (target) link = decodeURIComponent(target);
+          if (target) link = target;
         }
-      } catch (_) {}
+      } catch (_) { return; }
       const description = cleanText(node.find(".result__snippet").first().text(), 850);
-      if (!headline || !/^https?:\\/\\//i.test(link)) return;
-      let host = "";
-      try { host = new URL(link).hostname.replace(/^www\\./i, "").toLowerCase(); } catch (_) {}
-      if (!host || /(^|\\.)duckduckgo\\.com$/i.test(host)) return;
+      if (!headline) return;
+      let destination;
+      try { destination = new URL(link); } catch (_) { return; }
+      if (destination.protocol !== "http:" && destination.protocol !== "https:") return;
+      const host = destination.hostname.toLowerCase();
+      if (!host || host === "duckduckgo.com" || host.endsWith(".duckduckgo.com")) return;
       items.push({
         headline,
         url: link,
@@ -1001,7 +1004,8 @@ async function factCheckArticleText(articleText, articleUrl = "") {
       if (!key || seenArticleKeys.has(key)) continue;
       if (articleHost && item.url) {
         try {
-          const candidateHost = new URL(item.url).hostname.replace(/^www\\./i, "").toLowerCase();
+          let candidateHost = new URL(item.url).hostname.toLowerCase();
+          if (candidateHost.startsWith("www.")) candidateHost = candidateHost.slice(4);
           if (candidateHost === articleHost || candidateHost.endsWith("." + articleHost)) continue;
         } catch (_) {}
       }
