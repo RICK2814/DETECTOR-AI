@@ -1,7 +1,8 @@
 // pages/Detect.jsx
 import React, { useState, useRef, useCallback } from "react";
-import { detectText, detectUrl, detectFile } from "../utils/api";
+import { detectText, detectUrl, detectFile, factCheckNews } from "../utils/api";
 import Results from "../components/Results";
+import FactCheckResults from "../components/FactCheckResults";
 import { Card, CardHeader, Button, Spinner } from "../components/UI";
 
 function getReadableError(error) {
@@ -29,6 +30,20 @@ export default function Detect() {
   const [result,    setResult]    = useState(null);
   const [error,     setError]     = useState(null);
   const [dragging,  setDragging]  = useState(false);
+
+  // Separate mode for evidence-backed news claim verification.
+  const [mode, setMode] = useState("ai");
+  const [factInputTab, setFactInputTab] = useState("text");
+  const [factText, setFactText] = useState("");
+  const [factUrl, setFactUrl] = useState("");
+  const [factLoading, setFactLoading] = useState(false);
+  const [factCheckResult, setFactCheckResult] = useState(null);
+  const [factCheckError, setFactCheckError] = useState(null);
+  const factTextWc = factText.trim() ? factText.trim().split(/\\s+/).filter(Boolean).length : 0;
+  const canFactCheck = !factLoading && (
+    (factInputTab === "text" && factTextWc >= 20) ||
+    (factInputTab === "url" && /^https?:\\/\\//i.test(factUrl.trim()))
+  );
 
   // When URL extraction fails — show inline paste fallback
   const [showPasteFallback, setShowPasteFallback] = useState(false);
@@ -88,10 +103,36 @@ export default function Detect() {
     }
   }, [tab, text, url, file, showPasteFallback, pastedText, pastedWc]);
 
+  const runNewsFactCheck = useCallback(async () => {
+    setFactCheckError(null);
+    setFactCheckResult(null);
+    setFactLoading(true);
+    try {
+      const response = await factCheckNews({
+        text: factInputTab === "text" ? factText.trim() : "",
+        url: factInputTab === "url" ? factUrl.trim() : "",
+      });
+      setFactCheckResult(response);
+    } catch (e) {
+      setFactCheckError(getReadableError(e));
+    } finally {
+      setFactLoading(false);
+    }
+  }, [factInputTab, factText, factUrl]);
+
+  const switchMode = nextMode => {
+    setMode(nextMode);
+    setResult(null); setError(null); setStatusMsg("");
+    setFactCheckResult(null); setFactCheckError(null);
+    setLoading(false); setFactLoading(false);
+  };
+
   const reset = () => {
     setResult(null); setError(null); setStatusMsg("");
     setText(""); setUrl(""); setFile(null);
     setShowPasteFallback(false); setPastedText("");
+    setFactText(""); setFactUrl(""); setFactInputTab("text");
+    setFactCheckResult(null); setFactCheckError(null);
   };
 
   const handleDrop = e => {
@@ -165,12 +206,42 @@ export default function Detect() {
     <div style={S.page}>
       {/* Hero */}
       <div style={S.hero}>
-        <h1 style={S.h1}>Is this text <span style={S.accent}>AI-generated?</span></h1>
-        <p style={S.sub}>Multi-signal forensic analysis · Text · URLs · Files</p>
+        <h1 style={S.h1}>
+          {mode === "ai" ? <>Is this text <span style={S.accent}>AI-generated?</span></> : <>Is this news <span style={S.accent}>true or false?</span></>}
+        </h1>
+        <p style={S.sub}>
+          {mode === "ai"
+            ? "Multi-signal forensic analysis · Text · URLs · Files"
+            : "Claim-by-claim verification · Retrieved sources · Evidence links"}
+        </p>
       </div>
 
-      {/* Input */}
-      {!result && !loading && (
+      {/* Feature selector — keeps the original page styling and animation system */}
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
+        {[
+          ["ai", "🔎", "AI Text Detection"],
+          ["factcheck", "📰", "News Fact Check"],
+        ].map(([id, icon, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => switchMode(id)}
+            style={{
+              padding: "11px 18px", borderRadius: 8, cursor: "pointer",
+              border: `1px solid ${mode === id ? "var(--accent)" : "var(--border2)"}`,
+              background: mode === id ? "rgba(0,229,255,0.08)" : "var(--surface2)",
+              color: mode === id ? "var(--accent)" : "var(--muted)",
+              fontFamily: "var(--mono)", fontSize: 11, fontWeight: 700,
+              letterSpacing: 0.8, transition: "all 0.2s",
+            }}
+          >
+            {icon} {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Existing AI detector — unchanged form and result layout */}
+      {mode === "ai" && !result && !loading && (
         <Card>
           <CardHeader>Input Source</CardHeader>
 
@@ -274,8 +345,91 @@ export default function Detect() {
         </Card>
       )}
 
+      {/* News Fact Check input */}
+      {mode === "factcheck" && !factCheckResult && !factLoading && (
+        <Card>
+          <CardHeader>News Input</CardHeader>
+          <div style={S.tabs}>
+            {[
+              ["text", "✏️", "Paste News Text"],
+              ["url", "🌐", "From URL"],
+            ].map(([id, icon, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => { setFactInputTab(id); setFactCheckError(null); }}
+                style={S.tab(factInputTab === id)}
+              >
+                {icon} {label}
+              </button>
+            ))}
+          </div>
+          <div style={S.input}>
+            {factInputTab === "text" ? (
+              <textarea
+                value={factText}
+                onChange={e => { setFactText(e.target.value); setFactCheckError(null); }}
+                placeholder="Paste the news article or factual claims here… (minimum 20 words)"
+                style={S.textarea}
+                onFocus={e => e.target.style.borderColor = "var(--accent)"}
+                onBlur={e => e.target.style.borderColor = "var(--border2)"}
+              />
+            ) : (
+              <>
+                <input
+                  type="url"
+                  value={factUrl}
+                  onChange={e => { setFactUrl(e.target.value); setFactCheckError(null); }}
+                  placeholder="https://example.com/news-article"
+                  style={S.urlInput}
+                  onFocus={e => e.target.style.borderColor = "var(--accent)"}
+                  onBlur={e => e.target.style.borderColor = "var(--border2)"}
+                  onKeyDown={e => e.key === "Enter" && canFactCheck && runNewsFactCheck()}
+                />
+                <div style={{ marginTop: 8, fontSize: 11, color: "var(--muted)", lineHeight: 1.6 }}>
+                  Use a public article URL. Pages behind a login or anti-bot wall may not be readable; paste the article text instead.
+                </div>
+              </>
+            )}
+          </div>
+          <div style={S.actions}>
+            {factInputTab === "text" && (
+              <div style={S.wc(factTextWc >= 20)}>
+                {factTextWc} words{factTextWc > 0 && factTextWc < 20 ? ` · need ${20 - factTextWc} more` : ""}{factTextWc >= 20 ? " · ready ✓" : ""}
+              </div>
+            )}
+            <Button onClick={runNewsFactCheck} disabled={!canFactCheck} style={{ width: "100%", fontSize: 14, padding: 16 }}>
+              📰 Fact Check News
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {mode === "factcheck" && factCheckError && !factCheckResult && (
+        <>
+          <div style={S.errBox}>
+            <span style={{ flexShrink: 0 }}>⚠️</span><div>{factCheckError}</div>
+          </div>
+          <Button variant="ghost" onClick={reset} style={{ width: "100%" }}>← Try Again</Button>
+        </>
+      )}
+
+      {mode === "factcheck" && factLoading && (
+        <Card>
+          <div style={S.loadBox}>
+            <Spinner size={72} />
+            <div style={S.loadText}>Checking news claims…</div>
+            <div style={S.statusBx}>Extracting claims and checking available source evidence</div>
+          </div>
+        </Card>
+      )}
+
+      {mode === "factcheck" && factCheckResult && (
+        <FactCheckResults result={factCheckResult} onReset={reset} />
+      )}
+
       {/* Loading */}
-      {loading && (
+      {mode === "ai" && loading && (
         <Card>
           <div style={S.loadBox}>
             <Spinner size={72} />
@@ -286,7 +440,7 @@ export default function Detect() {
       )}
 
       {/* Error */}
-      {error && !showPasteFallback && (
+      {mode === "ai" && error && !showPasteFallback && (
         <>
           <div style={S.errBox}>
             <span style={{ flexShrink:0 }}>⚠️</span><div>{error}</div>
@@ -296,7 +450,7 @@ export default function Detect() {
       )}
 
       {/* Results */}
-      {result && <Results result={result} onReset={reset} />}
+      {mode === "ai" && result && <Results result={result} onReset={reset} />}
     </div>
   );
 }
