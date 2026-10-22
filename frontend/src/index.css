@@ -1286,13 +1286,26 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 .fc-source-link { transition: color .25s ease, text-shadow .25s ease; }
 .fc-source-link:hover { text-shadow: 0 0 16px rgba(131,234,255,.18); }
 .fc-claim-card { isolation: isolate; }
+/* Claim cards inherit the shared surface sweep; keep their outline independent. */
 .fc-claim-card::after {
-  content: ""; position: absolute; pointer-events: none; inset: 0; border-radius: inherit;
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  border-radius: inherit;
   border: 1px solid rgba(131,234,255,0);
-  background: linear-gradient(115deg, transparent 20%, rgba(131,234,255,.15) 48%, rgba(169,151,255,.12) 56%, transparent 80%);
-  opacity: 0; transition: opacity .35s ease;
+  background: none;
+  opacity: 0;
+  transform: none;
+  animation: none;
+  pointer-events: none;
+  transition: border-color .35s ease, opacity .35s ease;
 }
-.fc-claim-card:hover::after { opacity: 1; }
+.fc-claim-card:hover::after {
+  opacity: 1;
+  border-color: rgba(131,234,255,.18);
+}
 .detection-verdict-card { position: relative; isolation: isolate; }
 .detection-verdict-card::after {
   content: ""; position: absolute; top: 0; left: -45%; right: -45%; height: 1px; pointer-events: none;
