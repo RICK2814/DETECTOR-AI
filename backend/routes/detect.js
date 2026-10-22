@@ -530,10 +530,10 @@ function cleanText(value, max = 500) {
 }
 
 function getClaimLocale(text) {
-  if (/[\\u0980-\\u09FF]/.test(text)) {
+  if (/[\u0980-\u09FF]/.test(text)) {
     return { languageCode: "bn", hl: "bn-IN", gl: "IN", ceid: "IN:bn" };
   }
-  if (/[\\u0900-\\u097F]/.test(text)) {
+  if (/[\u0900-\u097F]/.test(text)) {
     return { languageCode: "hi", hl: "hi-IN", gl: "IN", ceid: "IN:hi" };
   }
   return { languageCode: "en", hl: "en-IN", gl: "IN", ceid: "IN:en" };
@@ -875,7 +875,7 @@ Use only source_ids that exist in the provided evidence. If evidence is insuffic
       // independently corroborates the same claim across two publishers.
       // Headline-only/short snippets still cannot produce a definitive label.
       const distinctDomains = new Set(selectedSources.map(source => {
-        try { return new URL(source.url).hostname.replace(/^www\\./i, "").toLowerCase(); }
+        try { return new URL(source.url).hostname.replace(/^www\./i, "").toLowerCase(); }
         catch (_) { return ""; }
       }).filter(Boolean));
       const hasSubstantiveExcerpts = selectedSources.every(source =>
