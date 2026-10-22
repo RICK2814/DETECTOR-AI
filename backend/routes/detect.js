@@ -9,7 +9,20 @@ const { v4: uuidv4 } = require("uuid");
 const db = require("../db");
 
 let PDFParse;
-try { PDFParse = require("pdf-parse").PDFParse; } catch(e) {}
+let pdfParseInitError = null;
+try {
+  // Required by pdf-parse v2 in serverless deployments (including Vercel).
+  // Register the worker before requiring PDFParse so the module can resolve
+  // its PDF.js worker assets inside the bundled function.
+  require("pdf-parse/worker");
+  PDFParse = require("pdf-parse").PDFParse;
+  if (typeof PDFParse !== "function") {
+    throw new Error("pdf-parse did not export the PDFParse constructor.");
+  }
+} catch (e) {
+  pdfParseInitError = e;
+  console.error("[PDF PARSER INIT]", e && e.stack ? e.stack : e);
+}
 
 // Groq retired the older Llama 3 IDs for Free/Developer usage.
 // Prefer an active Developer-plan model, but allow an explicitly configured
@@ -514,14 +527,26 @@ async function callGroqDetection(text) {
 
 async function extractFromFile(buffer, mimetype, originalname) {
   if (mimetype === "application/pdf" || originalname.toLowerCase().endsWith(".pdf")) {
-    if (!PDFParse) throw new Error("PDF parser unavailable.");
-    const parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
-    const text = (typeof result.text === "string" ? result.text
-      : (result.pages||[]).map(p=>p.text||"").join("\n"))
-      .replace(/\s+/g," ").trim();
-    if (text.length < 50) throw new Error("No readable text in PDF (may be a scanned image).");
-    return text;
+    if (typeof PDFParse !== "function") {
+      console.error("[PDF PARSER UNAVAILABLE]", pdfParseInitError && pdfParseInitError.stack ? pdfParseInitError.stack : pdfParseInitError);
+      throw new Error("PDF parser failed to initialize on the server. Check the Vercel Function Logs for [PDF PARSER INIT].");
+    }
+
+    const parser = new PDFParse({ data: new Uint8Array(buffer) });
+    try {
+      const result = await parser.getText();
+      const text = (typeof result.text === "string" ? result.text
+        : (result.pages || []).map(p => p.text || "").join("\n"))
+        .replace(/\s+/g, " ").trim();
+      if (text.length < 50) throw new Error("No readable text in PDF (it may be scanned or image-only).");
+      return text;
+    } finally {
+      if (typeof parser.destroy === "function") {
+        try { await parser.destroy(); } catch (cleanupError) {
+          console.warn("[PDF PARSER CLEANUP]", cleanupError.message);
+        }
+      }
+    }
   }
   return buffer.toString("utf-8");
 }
