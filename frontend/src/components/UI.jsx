@@ -43,15 +43,16 @@ export function Gauge({ pct, color, size = 120 }) {
   const c = 2 * Math.PI * r;
   const offset = c - (pct / 100) * c;
   return (
-    <div style={{ width: size, height: size, position: "relative", flexShrink: 0 }}>
+    <div className="ui-gauge" style={{ width: size, height: size, position: "relative", flexShrink: 0 }}>
       <svg viewBox={`0 0 ${size} ${size}`} style={{ width: "100%", height: "100%", transform: "rotate(-90deg)" }}>
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={size*0.083} />
         <circle
+          className="ui-gauge__arc"
           cx={size/2} cy={size/2} r={r} fill="none"
           stroke={color} strokeWidth={size*0.083}
           strokeDasharray={c} strokeDashoffset={offset}
           strokeLinecap="round"
-          style={{ filter: `drop-shadow(0 0 ${size*0.07}px ${color})`, transition: "stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)" }}
+          style={{ filter: `drop-shadow(0 0 ${size*0.07}px ${color})`, "--gauge-full": c, "--gauge-end": offset }}
         />
       </svg>
       <div style={{
@@ -74,7 +75,7 @@ export function SignalBar({ name, score, label, invert = false }) {
   const color = aiScore >= 70 ? "var(--accent2)" : aiScore >= 40 ? "var(--warn)" : "var(--accent3)";
 
   return (
-    <div style={{
+    <div className="signal-bar" style={{
       background: "var(--surface)", border: "1px solid var(--border)",
       borderRadius: 10, padding: 16,
     }}>
@@ -83,7 +84,7 @@ export function SignalBar({ name, score, label, invert = false }) {
         {name}
       </div>
       <div style={{ background: "var(--bg)", borderRadius: 4, height: 6, marginBottom: 8, overflow: "hidden" }}>
-        <div style={{
+        <div className="signal-bar__fill" style={{
           height: "100%", borderRadius: 4, width: `${display}%`,
           background: color, boxShadow: `0 0 8px ${color}`,
           transition: "width 0.8s cubic-bezier(0.4,0,0.2,1)",
@@ -154,18 +155,19 @@ export function CardHeader({ children, dot = true, className = "" }) {
 
 export function Spinner({ size = 40 }) {
   return (
-    <div style={{ width: size, height: size, position: "relative" }}>
+    <div className="ui-spinner" role="status" aria-label="Loading" style={{ width: size, height: size, position: "relative" }}>
       {[0,1,2].map(i => (
-        <div key={i} style={{
+        <div key={i} className={`ui-spinner__ring ui-spinner__ring--${i + 1}`} style={{
           position: "absolute",
           inset: i * (size * 0.1),
           borderRadius: "50%",
           border: "2px solid transparent",
-          borderTopColor: i === 0 ? "var(--accent)" : i === 1 ? "#0077ff" : "rgba(0,229,255,0.4)",
+          borderTopColor: i === 0 ? "var(--accent)" : i === 1 ? "#818cf8" : "rgba(0,229,255,0.4)",
           animation: `spin ${1 + i * 0.5}s linear infinite`,
           animationDirection: i === 1 ? "reverse" : "normal",
         }} />
       ))}
+      <span className="ui-spinner__core" />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } } @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }`}</style>
     </div>
   );

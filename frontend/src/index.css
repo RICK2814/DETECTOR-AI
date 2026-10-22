@@ -1193,3 +1193,170 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
     transition: none !important;
   }
 }
+
+
+/* ── Motion System 03: scroll choreography + animated analytics surfaces ── */
+.motion-reveal {
+  opacity: 0;
+  translate: 0 14px;
+  animation: none !important;
+  transition: opacity .66s var(--ease-out) var(--motion-delay,0ms),
+              translate .66s var(--ease-out) var(--motion-delay,0ms);
+}
+.motion-reveal.motion-visible { opacity: 1; translate: 0 0; }
+
+.ui-card::after {
+  inset: -18% auto -18% -68%;
+  width: 72%;
+  height: 136%;
+  background: linear-gradient(105deg, transparent 0%, rgba(158,218,255,.012) 32%, rgba(177,226,255,.065) 50%, rgba(155,150,255,.025) 58%, transparent 76%);
+  opacity: .48;
+  transform: translate3d(0,0,0) skewX(-15deg);
+  animation: card-light-pass 14s var(--ease-out) infinite;
+  transition: opacity .35s ease;
+}
+.ui-card:hover::after { opacity: .92; transform: translate3d(0,0,0) skewX(-15deg); }
+@keyframes card-light-pass {
+  0%,13% { transform: translate3d(0,0,0) skewX(-15deg); opacity: .12; }
+  45% { opacity: .62; }
+  77%,100% { transform: translate3d(220%,0,0) skewX(-15deg); opacity: .08; }
+}
+.detect-mode-switcher { position: relative; overflow: hidden; isolation: isolate; }
+.detect-mode-switcher::before {
+  content: ""; position: absolute; z-index: -1; inset: -40% auto -40% -42%; width: 32%;
+  background: linear-gradient(90deg, transparent, rgba(131,234,255,.045), rgba(170,152,255,.06), transparent);
+  transform: translate3d(-80%,0,0) skewX(-18deg);
+  animation: switcher-light-pass 17s ease-in-out infinite; pointer-events: none;
+}
+@keyframes switcher-light-pass {
+  0%,18% { transform: translate3d(-80%,0,0) skewX(-18deg); }
+  68%,100% { transform: translate3d(560%,0,0) skewX(-18deg); }
+}
+.ui-gauge__arc { animation: gauge-draw 1.25s var(--ease-out) both; }
+@keyframes gauge-draw {
+  from { stroke-dashoffset: var(--gauge-full); opacity: .25; }
+  to { stroke-dashoffset: var(--gauge-end); opacity: 1; }
+}
+.ui-gauge { filter: drop-shadow(0 0 22px rgba(108,210,247,.025)); }
+.signal-bar {
+  position: relative; overflow: hidden;
+  background: linear-gradient(145deg, rgba(20,31,51,.72), rgba(8,14,26,.82)) !important;
+  transition: border-color .35s ease, transform .35s var(--ease-out), box-shadow .35s ease !important;
+}
+.signal-bar:hover {
+  border-color: rgba(131,234,255,.28) !important;
+  transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.14);
+}
+.signal-bar__fill, .result-score-fill, .result-signal-fill {
+  transform: scaleX(0); transform-origin: left center;
+  animation: metric-fill-in 1.05s var(--ease-out) .12s both;
+}
+@keyframes metric-fill-in { to { transform: scaleX(1); } }
+.result-mini-gauge {
+  box-shadow: 0 0 0 1px rgba(255,255,255,.035), 0 0 22px rgba(131,234,255,.045);
+  animation: gauge-orbit-arrive .8s var(--ease-out) both;
+}
+@keyframes gauge-orbit-arrive {
+  from { opacity: 0; transform: rotate(-24deg) scale(.86); }
+  to { opacity: 1; transform: rotate(0) scale(1); }
+}
+.ui-spinner { display: grid; place-items: center; filter: drop-shadow(0 0 14px rgba(103,220,248,.12)); }
+.ui-spinner__ring--1 { border-top-color: #9ef2ff !important; border-right-color: rgba(131,234,255,.2) !important; }
+.ui-spinner__ring--2 { border-top-color: #a59aff !important; border-left-color: rgba(165,154,255,.2) !important; }
+.ui-spinner__ring--3 { border-top-color: rgba(131,234,255,.55) !important; }
+.ui-spinner__core {
+  position: absolute; width: 17%; height: 17%; border-radius: 50%;
+  background: linear-gradient(135deg,#c5f8ff,#9c9bff);
+  box-shadow: 0 0 16px rgba(131,234,255,.34);
+  animation: spinner-core-pulse 2.4s ease-in-out infinite;
+}
+@keyframes spinner-core-pulse {
+  0%,100% { transform: scale(.76); opacity: .65; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+.fc-source-card { position: relative; overflow: hidden; }
+.fc-source-card::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 2px;
+  background: linear-gradient(180deg, transparent, rgba(131,234,255,.55), rgba(169,151,255,.4), transparent);
+  transform: scaleY(.12); transform-origin: center; opacity: .35;
+  transition: transform .4s var(--ease-out), opacity .4s ease;
+}
+.fc-source-card:hover::before { transform: scaleY(1); opacity: 1; }
+.fc-source-card > * { position: relative; z-index: 1; }
+.fc-source-link { transition: color .25s ease, text-shadow .25s ease; }
+.fc-source-link:hover { text-shadow: 0 0 16px rgba(131,234,255,.18); }
+.fc-claim-card { isolation: isolate; }
+.fc-claim-card::after {
+  content: ""; position: absolute; pointer-events: none; inset: 0; border-radius: inherit;
+  border: 1px solid rgba(131,234,255,0);
+  background: linear-gradient(115deg, transparent 20%, rgba(131,234,255,.15) 48%, rgba(169,151,255,.12) 56%, transparent 80%);
+  opacity: 0; transition: opacity .35s ease;
+}
+.fc-claim-card:hover::after { opacity: 1; }
+.detection-verdict-card { position: relative; isolation: isolate; }
+.detection-verdict-card::after {
+  content: ""; position: absolute; top: 0; left: -45%; right: -45%; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg,transparent,rgba(131,234,255,.8),rgba(170,151,255,.68),transparent);
+  transform: translate3d(-35%,0,0); opacity: .45; animation: verdict-rail 9s ease-in-out infinite;
+}
+@keyframes verdict-rail {
+  0%,10% { transform: translate3d(-35%,0,0); opacity: 0; }
+  28%,64% { opacity: .65; }
+  88%,100% { transform: translate3d(35%,0,0); opacity: 0; }
+}
+.stat-box::before { left: -40%; animation: stat-light-composited 8s ease-in-out infinite; }
+@keyframes stat-light-composited {
+  0%,15% { transform: translate3d(-20%,0,0); opacity: 0; }
+  42% { opacity: .9; }
+  80%,100% { transform: translate3d(330%,0,0); opacity: 0; }
+}
+.scan-row__source-icon { transition: border-color .3s ease, color .3s ease, transform .38s var(--ease-out), background .3s ease; }
+.scan-row:hover .scan-row__source-icon {
+  border-color: rgba(131,234,255,.3); color: #d9faff; transform: translateY(-1px) scale(1.025);
+}
+.empty-state__icon { position: relative; }
+.empty-state__icon::after {
+  content: ""; position: absolute; inset: -7px; border: 1px solid rgba(131,234,255,.18);
+  border-radius: 27px; animation: empty-orbit 5s ease-in-out infinite;
+}
+@keyframes empty-orbit {
+  0%,100% { transform: scale(.96); opacity: .22; }
+  50% { transform: scale(1.09); opacity: .68; }
+}
+.detect-textarea:focus, .detect-url-input:focus {
+  border-color: rgba(131,234,255,.7) !important;
+  background: rgba(7,14,26,.9) !important;
+  box-shadow: 0 0 0 4px rgba(131,234,255,.065), 0 0 24px rgba(131,234,255,.035), inset 0 1px 0 rgba(255,255,255,.025) !important;
+}
+.ui-button { position: relative; overflow: hidden; }
+.ui-button::after {
+  content: ""; position: absolute; top: -40%; bottom: -40%; left: -55%; width: 34%;
+  background: linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+  transform: translate3d(-110%,0,0) skewX(-16deg); opacity: 0; pointer-events: none;
+}
+.ui-button:not(:disabled):hover::after { opacity: .85; animation: button-light-pass .85s var(--ease-out) both; }
+@keyframes button-light-pass { to { transform: translate3d(520%,0,0) skewX(-16deg); } }
+.detect-navbar__actions .cl-userButtonBox { transition: transform .35s var(--ease-out), filter .35s ease; }
+.detect-navbar__actions .cl-userButtonBox:hover { transform: translateY(-1px); filter: drop-shadow(0 0 9px rgba(131,234,255,.14)); }
+@media (hover: none) {
+  .ui-card::after { animation-duration: 22s; opacity: .28; }
+  .signal-bar:hover { transform: none; box-shadow: none; }
+  .fc-claim-card:hover::after { opacity: 0; }
+}
+@media (max-width: 680px) {
+  .motion-reveal { translate: 0 8px; transition-duration: .48s; }
+  .ui-card::after { animation-duration: 22s; opacity: .2; }
+  .ui-card:hover::after { opacity: .2; }
+  .detect-mode-switcher::before { opacity: .5; }
+  .ui-button:not(:disabled):hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-reveal, .motion-reveal.motion-visible { opacity: 1 !important; translate: none !important; transition: none !important; }
+  .ui-card::after, .detect-mode-switcher::before, .ui-gauge__arc, .signal-bar__fill,
+  .result-score-fill, .result-signal-fill, .result-mini-gauge, .ui-spinner__core,
+  .fc-claim-card::after, .detection-verdict-card::after, .stat-box::before,
+  .empty-state__icon::after, .ui-button::after {
+    animation: none !important; transition: none !important;
+  }
+  .signal-bar__fill, .result-score-fill, .result-signal-fill { transform: none !important; }
+}

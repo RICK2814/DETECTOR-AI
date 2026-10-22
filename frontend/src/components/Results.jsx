@@ -102,7 +102,7 @@ export default function Results({ result, onReset }) {
                 <div style={{
                   flex:1, height:8, background:"var(--bg)", borderRadius:4, overflow:"hidden",
                 }}>
-                  <div style={{
+                  <div className="result-score-fill" style={{
                     width:`${result.stat_ai_score}%`, height:"100%",
                     background: result.stat_ai_score > 60 ? "var(--accent2)" : "var(--accent3)",
                     borderRadius:4, transition:"width 1s",
@@ -122,7 +122,7 @@ export default function Results({ result, onReset }) {
                 <div style={{
                   flex:1, height:8, background:"var(--bg)", borderRadius:4, overflow:"hidden",
                 }}>
-                  <div style={{
+                  <div className="result-score-fill" style={{
                     width:`${result.llm_ai_score}%`, height:"100%",
                     background: result.llm_ai_score > 60 ? "var(--accent2)" : "var(--accent3)",
                     borderRadius:4, transition:"width 1s",
@@ -178,7 +178,7 @@ export default function Results({ result, onReset }) {
                     {label}
                   </div>
                   <div style={{ background:"var(--surface)", borderRadius:3, height:5, marginBottom:6, overflow:"hidden" }}>
-                    <div style={{ width:`${sig.score}%`, height:"100%", background:barColor, borderRadius:3, transition:"width 1s" }} />
+                    <div className="result-signal-fill" style={{ width:`${sig.score}%`, height:"100%", background:barColor, borderRadius:3, transition:"width 1s" }} />
                   </div>
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, color:"var(--muted)" }}>
                     <span style={{ fontSize:10 }}>{sig.label}</span>

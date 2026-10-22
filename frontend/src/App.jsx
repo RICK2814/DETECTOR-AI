@@ -23,6 +23,7 @@ const shellStyle = {
 export default function App() {
   return (
     <>
+      <MotionDirector />
       <ClerkApiSetup />
       <SignedIn>
         <div className="app-shell" style={shellStyle}>
@@ -218,4 +219,52 @@ function AmbientMotion() {
       </div>
     </>
   );
+}
+
+
+// Adds the same scroll-reveal choreography to newly mounted sections/results.
+function MotionDirector() {
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    if (!("IntersectionObserver" in window) || !("MutationObserver" in window)) return undefined;
+    const selector = [
+      ".ui-card", ".detection-verdict-card", ".fc-claim-card", ".fc-source-card",
+      ".scan-row", ".stat-box", ".detect-hero", ".detect-mode-switcher",
+      ".detect-tabs", ".detect-input", ".detect-actions",
+      ".scan-page > div:first-child", ".stats-page > div:first-child", ".detail-page > button"
+    ].join(",");
+    const bound = new WeakSet();
+    let sequence = 0, frame = 0, queued = false;
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("motion-visible");
+        revealObserver.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -5% 0px", threshold: 0.06 });
+    const scan = () => {
+      queued = false;
+      document.querySelectorAll(selector).forEach(element => {
+        if (bound.has(element)) return;
+        bound.add(element);
+        element.classList.add("motion-reveal");
+        element.style.setProperty("--motion-delay", (Math.min(sequence++ % 5, 4) * 38) + "ms");
+        revealObserver.observe(element);
+      });
+    };
+    const schedule = () => {
+      if (queued) return;
+      queued = true;
+      frame = window.requestAnimationFrame(scan);
+    };
+    scan();
+    const mutationObserver = new MutationObserver(schedule);
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      mutationObserver.disconnect();
+      revealObserver.disconnect();
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+  return null;
 }
