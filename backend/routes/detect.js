@@ -883,7 +883,10 @@ async function resolveGoogleNewsArticleUrl(articleUrl) {
 }
 
 async function fetchNewsEvidence(item, id) {
-  const publisherUrl = await resolveGoogleNewsArticleUrl(item.url);
+  let itemHost = "";
+  try { itemHost = new URL(item.url).hostname.toLowerCase(); } catch (_) {}
+  const isGoogleNewsWrapper = itemHost === "news.google.com" || itemHost.endsWith(".news.google.com");
+  const publisherUrl = isGoogleNewsWrapper ? await resolveGoogleNewsArticleUrl(item.url) : item.url;
   const resolvedUrl = publisherUrl || item.url;
   const base = {
     id,
@@ -898,9 +901,11 @@ async function fetchNewsEvidence(item, id) {
     hasFullText: false,
   };
 
-  // If Google News URL resolution fails, keep the search result link/snippet
-  // visible for transparency; the evidence gate still prevents a snippet alone
-  // from producing TRUE/FALSE without independent corroboration.
+  // If the Google News wrapper cannot be resolved, show its title/snippet as
+  // search evidence, but do not scrape the wrapper or treat it as full article text.
+  if (isGoogleNewsWrapper && !publisherUrl) {
+    return { ...base, url: item.url, text: cleanText(item.description || item.headline, 700), hasFullText: false };
+  }
   if (!resolvedUrl) return { ...base, url: null, hasFullText: false };
 
   try {
@@ -1105,7 +1110,7 @@ Verdicts:
 - FALSE: strong evidence directly contradicts the precise claim or a closely matching published fact-check clearly rates that same claim false.
 - MIXED: the claim is partly accurate, omits essential context, or combines true and false details.
 - UNVERIFIED: evidence is missing, too weak, based only on headlines, does not match the claim, or sources materially conflict.
-Do not infer FALSE from lack of coverage. Headline-only items are not enough by themselves to justify TRUE or FALSE. A related fact-check only applies if the reviewed claim materially matches the claim being evaluated. Do not invent sources, quotes, dates or facts. Prefer primary sources and independent reputable reporting. AI probabilities are not proof.
+Do not infer FALSE from lack of coverage. Evaluate the supplied live web-search, news-report, primary-source, and published fact-check evidence even when Google's published fact-check database has no match. A database NO MATCH is not evidence for UNVERIFIED. Headline-only items are not enough by themselves to justify TRUE or FALSE, but substantial excerpts from two independent, relevant publishers may support a cautious MEDIUM-confidence assessment if they consistently address the precise claim. A related fact-check only applies if the reviewed claim materially matches the claim being evaluated. If source material directly supports or contradicts a claim, include its exact source ID; do not leave source_ids empty merely because the published fact-check database had no match. Do not invent sources, quotes, dates or facts. Prefer primary sources and independent reputable reporting. Distinguish an event's occurrence from disputed explanations for why it happened. AI probabilities are not proof.
 
 Return only JSON. Each claim result must use exactly one verdict value: TRUE, FALSE, MIXED, or UNVERIFIED. Do not return the pipe-delimited list as a literal verdict.
 Example structure:
@@ -1189,7 +1194,29 @@ Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sou
       if (host) fallbackHosts.add(host);
       if (fallbackSources.length >= 3) break;
     }
-    const selectedSources = modelSelectedSources.length ? modelSelectedSources : fallbackSources;
+    let selectedSources = modelSelectedSources.length ? [...modelSelectedSources] : [...fallbackSources];
+
+    // For TRUE/FALSE assessments, supplement a too-short model citation list
+    // with relevant independent domains returned by search. This keeps
+    // corroborating evidence attached when the model selected only one source ID.
+    if (verdict === "TRUE" || verdict === "FALSE") {
+      const selectedUrls = new Set(selectedSources.map(source => source.url).filter(Boolean));
+      const selectedHosts = new Set();
+      for (const source of selectedSources) {
+        try { selectedHosts.add(new URL(source.url).hostname.toLowerCase()); } catch (_) {}
+      }
+      for (const entry of rankedSources) {
+        const source = entry.source;
+        if (!source.url || selectedUrls.has(source.url)) continue;
+        let host = "";
+        try { host = new URL(source.url).hostname.toLowerCase(); } catch (_) {}
+        if (host && selectedHosts.has(host)) continue;
+        selectedSources.push(source);
+        selectedUrls.add(source.url);
+        if (host) selectedHosts.add(host);
+        if (selectedSources.length >= 4) break;
+      }
+    }
 
     // No cited evidence must never produce a definitive verdict.
     if (selectedSources.length === 0 && (verdict === "TRUE" || verdict === "FALSE")) {
@@ -1207,7 +1234,7 @@ Copy claim_id exactly. source_ids must contain the exact IDs of the evidence sou
         catch (_) { return ""; }
       }).filter(Boolean));
       const hasSubstantiveExcerpts = selectedSources.every(source =>
-        cleanText(source.evidenceExcerpt || source.text || "", 700).length >= 140
+        cleanText(source.evidenceExcerpt || source.text || "", 700).length >= 100
       );
       if (distinctDomains.size < 2 || !hasSubstantiveExcerpts) {
         verdict = "UNVERIFIED";
