@@ -571,11 +571,11 @@ async function searchPublishedFactChecks(claim) {
   }
 }
 
-async function searchNewsRss(claim) {
+async function searchNewsRss(claim, mode = "news") {
   try {
     const url = "https://news.google.com/rss/search";
     const response = await axios.get(url, {
-      params: { q: claim.slice(0, 180), ...getClaimLocale(claim) },
+      params: { q: mode === "fact_check" ? `${claim.slice(0, 135)} fact check` : claim.slice(0, 180), ...getClaimLocale(claim) },
       timeout: 6000,
       maxContentLength: 1500000,
       headers: { "User-Agent": HEADERS["User-Agent"], Accept: "application/rss+xml,application/xml,text/xml,*/*" },
@@ -591,7 +591,7 @@ async function searchNewsRss(claim) {
       const publishedAt = cleanText(node.find("pubDate").first().text(), 100);
       const description = cleanText(node.find("description").first().text().replace(/<[^>]*>/g, " "), 500);
       if (!headline || !/^https?:\/\//i.test(link)) return;
-      items.push({ headline, url: link, publisher, publishedAt, description });
+      items.push({ headline, url: link, publisher, publishedAt, description, searchType: mode });
     });
     return items;
   } catch (err) {
@@ -790,11 +790,27 @@ async function factCheckArticleText(articleText) {
 
   // Retrieve published fact-checks and independent news coverage for every claim.
   const evidenceByClaim = await Promise.all(claims.map(async claim => {
-    const [publishedChecks, rssItems] = await Promise.all([
+    const [publishedChecks, rssItems, factCheckNewsItems] = await Promise.all([
       searchPublishedFactChecks(claim.text),
-      searchNewsRss(claim.text),
+      searchNewsRss(claim.text, "news"),
+      searchNewsRss(claim.text, "fact_check"),
     ]);
-    const candidateItems = rssItems.slice(0, 2);
+
+    // Mix one targeted fact-check article with one general report when available.
+    // Google News uses wrapper URLs; fetchNewsEvidence resolves these to publisher URLs.
+    const combinedItems = [];
+    const seenArticleKeys = new Set();
+    for (const item of [
+      ...factCheckNewsItems.slice(0, 2),
+      ...rssItems.slice(0, 4),
+      ...factCheckNewsItems.slice(2),
+    ]) {
+      const key = (item.url || item.headline || "").toLowerCase();
+      if (!key || seenArticleKeys.has(key)) continue;
+      seenArticleKeys.add(key);
+      combinedItems.push(item);
+    }
+    const candidateItems = combinedItems.slice(0, 2);
     const retrieved = await Promise.all(candidateItems.map((item, index) =>
       fetchNewsEvidence(item, `${claim.id}-N${index + 1}`)
     ));
