@@ -11,6 +11,8 @@ const db = require("../db");
 let PDFParse;
 try { PDFParse = require("pdf-parse").PDFParse; } catch(e) {}
 
+const GROQ_MODEL = (process.env.GROQ_MODEL || "openai/gpt-oss-120b").trim();
+
 let groqClient;
 function getGroqClient() {
   const key = (process.env.GROQ_API_KEY || "").trim();
@@ -358,7 +360,7 @@ async function callGroqDetection(text) {
   // Primary attempt: strict JSON mode with generous token budget
   try {
     const completion = await getGroqClient().chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: GROQ_MODEL,
       messages,
       temperature: 0.1,
       max_tokens: 2048,
@@ -378,7 +380,7 @@ async function callGroqDetection(text) {
 
     console.warn("[GROQ] json_object mode failed — retrying without response_format...");
     const completion2 = await getGroqClient().chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: GROQ_MODEL,
       messages,
       temperature: 0.1,
       max_tokens: 2048,
