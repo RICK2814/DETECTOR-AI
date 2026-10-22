@@ -1,7 +1,7 @@
 // pages/Stats.jsx — Dashboard with detection statistics
 import React, { useEffect, useState } from "react";
 import { getStats, getHistory } from "../utils/api";
-import { Card, CardHeader, Spinner } from "../components/UI";
+import { Card, CardHeader, Spinner, Icon } from "../components/UI";
 
 function StatBox({ label, value, color = "var(--accent)", icon }) {
   return (
@@ -9,7 +9,7 @@ function StatBox({ label, value, color = "var(--accent)", icon }) {
       background: "var(--surface)", border: "1px solid var(--border)",
       borderRadius: 12, padding: "24px 20px", textAlign: "center",
     }}>
-      <div style={{ fontSize: 32, marginBottom: 8 }}>{icon}</div>
+      <div className="stat-box__icon">{icon}</div>
       <div className="stat-box__value" style={{ fontFamily: "var(--head)", fontSize: 36, fontWeight: 800, color, lineHeight: 1 }}>
         {value ?? "—"}
       </div>
@@ -80,10 +80,10 @@ export default function Stats() {
 
       {/* Big numbers */}
       <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }}>
-        <StatBox icon="🔬" label="Total Scans"    value={stats?.total_scans}  color="var(--accent)"  />
-        <StatBox icon="⚠️" label="AI Generated"   value={stats?.total_ai}     color="var(--accent2)" />
-        <StatBox icon="✅" label="Human Written"  value={stats?.total_human}  color="var(--accent3)" />
-        <StatBox icon="⚡" label="Mixed Content"  value={stats?.total_mixed}  color="var(--warn)"    />
+        <StatBox icon={<Icon name="scan" size={26}/>} label="Total Scans"    value={stats?.total_scans}  color="var(--accent)"  />
+        <StatBox icon={<Icon name="alert-triangle" size={26}/>} label="AI Generated"   value={stats?.total_ai}     color="var(--accent2)" />
+        <StatBox icon={<Icon name="check-circle" size={26}/>} label="Human Written"  value={stats?.total_human}  color="var(--accent3)" />
+        <StatBox icon={<Icon name="layers" size={26}/>} label="Mixed Content"  value={stats?.total_mixed}  color="var(--warn)"    />
       </div>
 
       {/* Distribution bar */}
@@ -113,7 +113,7 @@ export default function Stats() {
                   borderBottom: i < recent.length - 1 ? "1px solid var(--border)" : "none",
                 }}>
                   <span style={{ fontSize: 18 }}>
-                    {scan.source_type === "url" ? "🌐" : scan.source_type === "file" ? "📄" : "✏️"}
+                    <Icon name={scan.source_type === "url" ? "globe" : scan.source_type === "file" ? "file-text" : "file"} size={18}/>
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -134,7 +134,7 @@ export default function Stats() {
 
       {stats?.total_scans === 0 && (
         <div style={{ textAlign: "center", padding: 60, color: "var(--muted)" }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📊</div>
+          <div className="empty-state__icon"><Icon name="chart" size={30}/></div>
           <p>No data yet. Run some scans to see statistics here.</p>
         </div>
       )}
