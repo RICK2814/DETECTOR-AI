@@ -86,9 +86,9 @@ export function VerdictBadge({ verdict, size = "md" }) {
 
 // ── Card ──────────────────────────────────────────────────────────────────────
 
-export function Card({ children, style }) {
+export function Card({ children, style, className = "" }) {
   return (
-    <div style={{
+    <div className={`ui-card${className ? ` ${className}` : ""}`} style={{
       background: "var(--surface)", border: "1px solid var(--border)",
       borderRadius: 12, overflow: "hidden", ...style,
     }}>
@@ -97,9 +97,9 @@ export function Card({ children, style }) {
   );
 }
 
-export function CardHeader({ children, dot = true }) {
+export function CardHeader({ children, dot = true, className = "" }) {
   return (
-    <div style={{
+    <div className={`ui-card__header${className ? ` ${className}` : ""}`} style={{
       padding: "13px 20px", borderBottom: "1px solid var(--border)",
       display: "flex", alignItems: "center", gap: 10,
       fontSize: 11, color: "var(--muted)", letterSpacing: 1.5,
@@ -138,15 +138,15 @@ export function Spinner({ size = 40 }) {
 
 // ── Button ────────────────────────────────────────────────────────────────────
 
-export function Button({ children, onClick, disabled, variant = "primary", style }) {
+export function Button({ children, onClick, disabled, variant = "primary", style, className = "", type = "button" }) {
   const base = {
     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
     padding: "13px 24px", border: "none", borderRadius: 8,
-    fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700,
-    letterSpacing: 1, textTransform: "uppercase",
+    fontFamily: "var(--body)", fontSize: 13, fontWeight: 700,
+    letterSpacing: 0.2, textTransform: "none",
     cursor: disabled ? "not-allowed" : "pointer",
     transition: "all 0.2s",
-    opacity: disabled ? 0.4 : 1,
+    opacity: disabled ? 0.56 : 1,
     ...style,
   };
   const variants = {
@@ -167,7 +167,13 @@ export function Button({ children, onClick, disabled, variant = "primary", style
     },
   };
   return (
-    <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>
+    <button
+      type={type}
+      className={`ui-button ui-button--${variant}${className ? ` ${className}` : ""}`}
+      onClick={onClick}
+      disabled={disabled}
+      style={{ ...base, ...variants[variant] }}
+    >
       {children}
     </button>
   );
