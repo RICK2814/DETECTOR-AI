@@ -152,7 +152,7 @@ async function fetchGoogleViaProxy(googleExportUrl, onProgress) {
 
   for (const proxy of proxies) {
     try {
-      onProgress && onProgress(`📄 Fetching via ${proxy.name}…`);
+      onProgress && onProgress(`Fetching via ${proxy.name}…`);
       const content = await proxy.run();
       if (!content || content.length < 100) continue;
 
@@ -191,7 +191,7 @@ async function fetchGoogleContent(url, onProgress) {
   console.log(`[GOOGLE] ${info.type}:${info.id} — trying ${exportUrls.length} export URLs`);
 
   for (const exportUrl of exportUrls) {
-    onProgress && onProgress(`📄 Trying Google export: ${exportUrl.split("?")[0].split("/").slice(-1)[0]}…`);
+    onProgress && onProgress(`Trying Google export: ${exportUrl.split("?")[0].split("/").slice(-1)[0]}…`);
     const text = await fetchGoogleViaProxy(exportUrl, onProgress);
     if (text) return text;
   }
@@ -248,14 +248,14 @@ async function fetchViaProxy(url, onProgress) {
 
   for (let i = 0; i < strategies.length; i++) {
     const s = strategies[i];
-    onProgress && onProgress(`🔄 Trying method ${i + 1}/${strategies.length} (${s.name})…`);
+    onProgress && onProgress(`Trying method ${i + 1}/${strategies.length} (${s.name})…`);
     try {
       const html = await s.run();
       if (!html || html.length < 300) continue;
       const text = parseHtml(html);
       const wc = text ? text.split(/\s+/).filter(Boolean).length : 0;
       if (text && wc >= 20) {
-        onProgress && onProgress(`✅ Extracted ${wc} words via ${s.name}`);
+        onProgress && onProgress(`Extracted ${wc} words via ${s.name}`);
         return text;
       }
     } catch(e) { console.warn(`[${s.name}]`, e.message); }
@@ -267,7 +267,7 @@ async function fetchViaProxy(url, onProgress) {
 // MAIN detectUrl — full pipeline
 // ════════════════════════════════════════════════════════════════════════════
 export const detectUrl = async (url, onProgress) => {
-  onProgress && onProgress("⚡ Contacting server…");
+  onProgress && onProgress("Contacting server…");
 
   // Step 1: server-side (handles Google + normal URLs with backend proxies)
   try {
@@ -288,10 +288,10 @@ export const detectUrl = async (url, onProgress) => {
 
   // Step 2: Google Drive special path (proxy through CORS proxies)
   if (isGoogleUrl(url)) {
-    onProgress && onProgress("📄 Detected Google Drive — fetching via proxy…");
+    onProgress && onProgress("Detected Google Drive — fetching via proxy…");
     const text = await fetchGoogleContent(url, onProgress);
     if (text) {
-      onProgress && onProgress("🧠 Analyzing with AI…");
+      onProgress && onProgress("Analyzing with AI…");
       const res = await api.post("/detect/url", { url, text });
       return res.data;
     }
@@ -299,7 +299,7 @@ export const detectUrl = async (url, onProgress) => {
     const e = new Error(
       "Could not access this Google Drive file.\n\n" +
       "Fix: Open the file → Share → Change to\n" +
-      "📋 'Anyone with the link' → Viewer\n\n" +
+      "'Anyone with the link' → Viewer\n\n" +
       "Then paste the link again.\n\n" +
       "Or copy the document text and paste it below."
     );
@@ -308,10 +308,10 @@ export const detectUrl = async (url, onProgress) => {
   }
 
   // Step 3: normal URL through browser proxies
-  onProgress && onProgress("🌐 Trying browser extraction…");
+  onProgress && onProgress("Trying browser extraction…");
   const text = await fetchViaProxy(url, onProgress);
   if (text) {
-    onProgress && onProgress("🧠 Analyzing with AI…");
+    onProgress && onProgress("Analyzing with AI…");
     const res = await api.post("/detect/url", { url, text });
     return res.data;
   }
