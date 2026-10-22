@@ -1,19 +1,19 @@
 // components/FactCheckResults.jsx
 import React from "react";
-import { Card, CardHeader, Button } from "./UI";
+import { Card, CardHeader, Button, Icon } from "./UI";
 
 const verdictStyle = verdict => {
   switch (verdict) {
     case "TRUE":
-      return { color: "var(--accent3)", background: "rgba(109,255,179,0.10)", label: "TRUE", icon: "✓" };
+      return { color: "var(--accent3)", background: "rgba(109,255,179,0.10)", label: "TRUE", icon: "check-circle" };
     case "FALSE":
-      return { color: "var(--accent2)", background: "rgba(255,60,110,0.10)", label: "FALSE", icon: "✕" };
+      return { color: "var(--accent2)", background: "rgba(255,60,110,0.10)", label: "FALSE", icon: "x-circle" };
     case "MIXED":
-      return { color: "var(--warn)", background: "rgba(255,184,48,0.10)", label: "MIXED / MISLEADING", icon: "⚠" };
+      return { color: "var(--warn)", background: "rgba(255,184,48,0.10)", label: "MIXED / MISLEADING", icon: "alert-triangle" };
     case "SATIRE":
-      return { color: "var(--warn)", background: "rgba(255,184,48,0.14)", label: "SATIRE / HUMOR", icon: "✦" };
+      return { color: "var(--warn)", background: "rgba(255,184,48,0.14)", label: "SATIRE / HUMOR", icon: "sparkles" };
     default:
-      return { color: "var(--muted)", background: "rgba(150,160,175,0.08)", label: "UNVERIFIED", icon: "?" };
+      return { color: "var(--muted)", background: "rgba(150,160,175,0.08)", label: "UNVERIFIED", icon: "info" };
   }
 };
 
@@ -103,7 +103,7 @@ export default function FactCheckResults({ result, onReset }) {
                 fontSize: 10, fontWeight: 800, letterSpacing: 0.8,
                 display: "inline-flex", alignItems: "center", gap: 5,
               }}>
-                <span>{badge.icon}</span>{badge.label}
+                <Icon name={badge.icon} size={14}/>{badge.label}
               </div>
             </div>
 
