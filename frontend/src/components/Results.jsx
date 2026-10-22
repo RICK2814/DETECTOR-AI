@@ -52,7 +52,7 @@ export default function Results({ result, onReset }) {
   const pa = result.paragraph_analysis;
 
   return (
-    <div style={{ animation: "fadeUp 0.4s ease" }}>
+    <div className="detection-results" style={{ animation: "fadeUp 0.4s ease" }}>
       <style>{`
         @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         .toggle-btn { background:none; border:1px solid var(--border2); border-radius:6px;
@@ -62,7 +62,7 @@ export default function Results({ result, onReset }) {
       `}</style>
 
       {/* ── Main Verdict Card ── */}
-      <div style={{
+      <div className="detection-verdict-card" style={{
         background: "var(--surface)", border: `1px solid ${color}44`,
         borderRadius: 12, padding: "28px 28px", marginBottom: 16,
         position: "relative", overflow: "hidden",
