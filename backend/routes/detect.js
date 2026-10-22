@@ -596,7 +596,7 @@ async function searchNewsRss(claim) {
 async function resolveGoogleNewsArticleUrl(articleUrl) {
   let parsed;
   try { parsed = new URL(articleUrl); } catch (_) { return null; }
-  if (!/(^|\\.)news\\.google\\.com$/i.test(parsed.hostname)) return articleUrl;
+  if (!/(^|\.)news\.google\.com$/i.test(parsed.hostname)) return articleUrl;
 
   const userAgent = HEADERS["User-Agent"];
   try {
@@ -661,9 +661,9 @@ async function resolveGoogleNewsArticleUrl(articleUrl) {
     if (!row || typeof row[2] !== "string") return null;
     const resolved = JSON.parse(row[2]);
     const publisherUrl = Array.isArray(resolved) && typeof resolved[1] === "string" ? resolved[1] : null;
-    if (!publisherUrl || !/^https?:\\/\\//i.test(publisherUrl)) return null;
+    if (!publisherUrl || !/^https?:\/\//i.test(publisherUrl)) return null;
     const resolvedHost = new URL(publisherUrl).hostname;
-    if (/(^|\\.)news\\.google\\.com$/i.test(resolvedHost)) return null;
+    if (/(^|\.)news\.google\.com$/i.test(resolvedHost)) return null;
     return publisherUrl;
   } catch (err) {
     console.warn("[FACT CHECK] Google News URL resolution failed:", err.response?.status || err.message);
@@ -673,7 +673,7 @@ async function resolveGoogleNewsArticleUrl(articleUrl) {
 
 async function fetchNewsEvidence(item, id) {
   const publisherUrl = await resolveGoogleNewsArticleUrl(item.url);
-  const resolvedUrl = publisherUrl || (/(^|\\.)news\\.google\\.com$/i.test(new URL(item.url).hostname) ? null : item.url);
+  const resolvedUrl = publisherUrl || (/(^|\.)news\.google\.com$/i.test(new URL(item.url).hostname) ? null : item.url);
   const base = {
     id,
     kind: "news_report",
