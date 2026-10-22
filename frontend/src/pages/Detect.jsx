@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { detectText, detectUrl, detectFile, factCheckNews } from "../utils/api";
 import Results from "../components/Results";
 import FactCheckResults from "../components/FactCheckResults";
-import { Card, CardHeader, Button, Spinner } from "../components/UI";
+import { Card, CardHeader, Button, Spinner, Icon } from "../components/UI";
 
 function getReadableError(error) {
   const candidate =
@@ -220,9 +220,9 @@ export default function Detect() {
       {/* Feature selector — keeps the original page styling and animation system */}
       <div className="detect-mode-switcher" style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
         {[
-          ["ai", "🔎", "AI Text Detection"],
-          ["factcheck", "📰", "News Fact Check"],
-        ].map(([id, icon, label]) => (
+          ["ai", "scan", "AI Text Detection"],
+          ["factcheck", "newspaper", "News Fact Check"],
+        ].map(([id, iconName, label]) => (
           <button
             key={id}
             type="button"
@@ -237,7 +237,7 @@ export default function Detect() {
               letterSpacing: 0.8, transition: "all 0.2s",
             }}
           >
-            {icon} {label}
+            <Icon name={iconName} size={16}/> {label}
           </button>
         ))}
       </div>
@@ -248,9 +248,9 @@ export default function Detect() {
           <CardHeader>Input Source</CardHeader>
 
           <div className="detect-tabs" style={S.tabs}>
-            {[["text","✏️","Paste Text"],["url","🌐","From URL"],["file","📁","Upload File"]].map(([id,ic,lb]) => (
+            {[["text","file-text","Paste Text"],["url","globe","From URL"],["file","upload","Upload File"]].map(([id,iconName,label]) => (
               <button key={id} type="button" aria-pressed={tab === id} onClick={() => { setTab(id); setShowPasteFallback(false); setError(null); }} style={S.tab(tab===id)}>
-                {ic} {lb}
+                <Icon name={iconName} size={15}/> {label}
               </button>
             ))}
           </div>
@@ -285,7 +285,7 @@ export default function Detect() {
                 {showPasteFallback && (
                   <div style={S.fallback}>
                     <div style={S.fallbackTitle}>
-                      ⚠️ Could not auto-extract text from this URL
+                      <Icon name="alert-triangle" size={15}/> Could not auto-extract text from this URL
                     </div>
                     <div style={S.fallbackSub}>
                       The website blocks automated access (login wall, JavaScript rendering, or anti-scraper protection).<br/>
@@ -301,14 +301,14 @@ export default function Detect() {
                       autoFocus
                     />
                     <div style={{ fontSize:11, color: pastedWc >= 20 ? "var(--accent3)" : "var(--muted)", marginTop:6, textAlign:"right" }}>
-                      {pastedWc} words {pastedWc > 0 && pastedWc < 20 ? `· need ${20 - pastedWc} more` : pastedWc >= 20 ? "· ready ✓" : ""}
+                      {pastedWc} words {pastedWc > 0 && pastedWc < 20 ? `· need ${20 - pastedWc} more` : pastedWc >= 20 ? "· ready" : ""}
                     </div>
                   </div>
                 )}
 
                 {!showPasteFallback && (
                   <div style={{ marginTop:8, fontSize:11, color:"var(--muted)", lineHeight:1.6 }}>
-                    💡 Supports news articles, blogs, Wikipedia, and most public pages.
+                    <Icon name="info" size={14}/> Supports news articles, blogs, Wikipedia, and most public pages.
                     If the URL fails, a text paste area will appear automatically.
                   </div>
                 )}
@@ -327,7 +327,7 @@ export default function Detect() {
               >
                 <input ref={fileRef} type="file" accept=".txt,.md,.html,.htm,.pdf"
                   style={{ display:"none" }} onChange={e => setFile(e.target.files[0])} />
-                <div style={{ fontSize:36, marginBottom:10 }}>{file ? "📄" : "📂"}</div>
+                <div className="detect-file-visual"><Icon name={file ? "file-text" : "upload"} size={32}/></div>
                 <p style={{ fontSize:13, color:"var(--muted)", lineHeight:1.7 }}>
                   {file
                     ? <strong style={{ color:"var(--text)" }}>{file.name}</strong>
@@ -341,11 +341,11 @@ export default function Detect() {
           <div className="detect-actions" style={S.actions}>
             {tab === "text" && (
               <div className="detect-word-count" style={S.wc(wordCount >= 20)}>
-                {wordCount} words{wordCount > 0 && wordCount < 20 ? ` · need ${20 - wordCount} more` : ""}{wordCount >= 20 ? " · ready ✓" : ""}
+                {wordCount} words{wordCount > 0 && wordCount < 20 ? ` · need ${20 - wordCount} more` : ""}{wordCount >= 20 ? " · ready" : ""}
               </div>
             )}
             <Button onClick={analyze} disabled={!canAnalyze} style={{ width:"100%", fontSize:14, padding:16 }}>
-              🔍 {showPasteFallback && pastedWc >= 20 ? "Analyze Pasted Text" : "Analyze"}
+              <Icon name="scan" size={17}/> {showPasteFallback && pastedWc >= 20 ? "Analyze Pasted Text" : "Analyze"}
             </Button>
           </div>
         </Card>
@@ -357,9 +357,9 @@ export default function Detect() {
           <CardHeader>News Input</CardHeader>
           <div className="detect-tabs" style={S.tabs}>
             {[
-              ["text", "✏️", "Paste News Text"],
-              ["url", "🌐", "From URL"],
-            ].map(([id, icon, label]) => (
+              ["text", "file-text", "Paste News Text"],
+              ["url", "globe", "From URL"],
+            ].map(([id, iconName, label]) => (
               <button
                 key={id}
                 type="button"
@@ -367,7 +367,7 @@ export default function Detect() {
                 onClick={() => { setFactInputTab(id); setFactCheckError(null); }}
                 style={S.tab(factInputTab === id)}
               >
-                {icon} {label}
+                <Icon name={iconName} size={16}/> {label}
               </button>
             ))}
           </div>
@@ -404,11 +404,11 @@ export default function Detect() {
           <div className="detect-actions" style={S.actions}>
             {factInputTab === "text" && (
               <div className="detect-word-count" style={S.wc(factTextWc >= 20)}>
-                {factTextWc} words{factTextWc > 0 && factTextWc < 20 ? ` · need ${20 - factTextWc} more` : ""}{factTextWc >= 20 ? " · ready ✓" : ""}
+                {factTextWc} words{factTextWc > 0 && factTextWc < 20 ? ` · need ${20 - factTextWc} more` : ""}{factTextWc >= 20 ? " · ready" : ""}
               </div>
             )}
             <Button onClick={runNewsFactCheck} disabled={!canFactCheck} style={{ width: "100%", fontSize: 14, padding: 16 }}>
-              📰 Fact Check News
+              <Icon name="newspaper" size={17}/> Fact Check News
             </Button>
           </div>
         </Card>
@@ -417,7 +417,7 @@ export default function Detect() {
       {mode === "factcheck" && factCheckError && !factCheckResult && (
         <>
           <div style={S.errBox}>
-            <span style={{ flexShrink: 0 }}>⚠️</span><div>{factCheckError}</div>
+            <Icon name="alert-triangle" size={17} style={{ marginTop: 2 }}/><div>{factCheckError}</div>
           </div>
           <Button variant="ghost" onClick={reset} style={{ width: "100%" }}>← Try Again</Button>
         </>
@@ -452,7 +452,7 @@ export default function Detect() {
       {mode === "ai" && error && !showPasteFallback && (
         <>
           <div style={S.errBox}>
-            <span style={{ flexShrink:0 }}>⚠️</span><div>{error}</div>
+            <Icon name="alert-triangle" size={17} style={{ marginTop: 2 }}/><div>{error}</div>
           </div>
           <Button variant="ghost" onClick={reset} style={{ width:"100%" }}>← Try Again</Button>
         </>
