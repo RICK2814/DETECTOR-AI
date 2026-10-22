@@ -1,6 +1,41 @@
 // components/UI.jsx — Shared low-level components
 import React from "react";
 
+// Lightweight, consistent SVG icon system — no emoji or icon-font dependencies.
+function IconGlyph({ name }) {
+  switch (name) {
+    case "scan": return <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5M10.5 7.5v6M7.5 10.5h6M4 3H3v4M20 3h1v4M4 21H3v-4M20 21h1v-4"/></>;
+    case "history": return <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.4 2M4.1 5.1 2.8 8.2l3.4.2"/></>;
+    case "chart": return <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2M3 7l6-3 6 7 6-5"/></>;
+    case "file-text": return <><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 12h6M9 16h6"/></>;
+    case "globe": return <><circle cx="12" cy="12" r="9"/><path d="M3.5 12h17M12 3c2.4 2.5 3.4 5.5 3.4 9s-1 6.5-3.4 9c-2.4-2.5-3.4-5.5-3.4-9S9.6 5.5 12 3Z"/></>;
+    case "file": return <><path d="M6 3h8l4 4v14H6zM14 3v5h5"/></>;
+    case "alert-triangle": return <><path d="m12 3 9 16H3L12 3Z"/><path d="M12 9v4M12 16.5h.01"/></>;
+    case "info": return <><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></>;
+    case "newspaper": return <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h4v4H7zM14 8h4M14 11h4M7 15h11M7 17.5h11"/></>;
+    case "trash": return <><path d="M4 7h16M10 3h4M6.5 7l1 14h9l1-14M10 10v7M14 10v7"/></>;
+    case "database": return <><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></>;
+    case "bot": return <><rect x="4" y="7" width="16" height="13" rx="3"/><path d="M12 3v4M8 12h.01M16 12h.01M8 16h8M2 11v5M22 11v5"/></>;
+    case "user-round": return <><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></>;
+    case "flag": return <><path d="M5 21V4M5 5c5-4 9 4 14 0v10c-5 4-9-4-14 0"/></>;
+    case "check-circle": return <><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 9"/></>;
+    case "x-circle": return <><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></>;
+    case "sparkles": return <><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="m19 14 1 2.5 2 1-2 1L19 21l-1-2.5-2-1 2-1 1-2.5ZM5 2l.7 1.8L7.5 4.5l-1.8.7L5 7l-.7-1.8L2.5 4.5l1.8-.7L5 2Z"/></>;
+    case "arrow-left": return <><path d="M19 12H5M12 19l-7-7 7-7"/></>;
+    case "external-link": return <><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></>;
+    case "shield-check": return <><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></>;
+    case "brain": return <><path d="M12 5a4 4 0 0 0-7-2 4 4 0 0 0-1 7 4.5 4.5 0 0 0 2 8 4 4 0 0 0 6 2V5ZM12 5a4 4 0 0 1 7-2 4 4 0 0 1 1 7 4.5 4.5 0 0 1-2 8 4 4 0 0 1-6 2V5Z"/><path d="M8 7v3l2 1M16 7v3l-2 1M7 15l3-1M17 15l-3-1"/></>;
+    case "layers": return <><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></>;
+    case "upload": return <><path d="M12 16V4m-5 5 5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></>;
+    case "lightbulb": return <><path d="M9 18h6M10 21h4M8.5 14.5A7 7 0 1 1 15.5 14.5c-.9.7-1.5 1.6-1.5 3h-4c0-1.4-.6-2.3-1.5-3Z"/></>;
+    default: return <><circle cx="12" cy="12" r="9"/><path d="M12 7v5m0 4h.01"/></>;
+  }
+}
+export function Icon({ name = "info", size = 18, strokeWidth = 1.75, className = "", style = {} }) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" style={{ display:"inline-block", flexShrink:0, verticalAlign:"-0.16em", ...style }}><IconGlyph name={name}/></svg>;
+}
+
+
 // ── Gauge ─────────────────────────────────────────────────────────────────────
 
 export function Gauge({ pct, color, size = 120 }) {
@@ -66,9 +101,9 @@ export function SignalBar({ name, score, label, invert = false }) {
 
 export function VerdictBadge({ verdict, size = "md" }) {
   const config = {
-    AI:     { color: "var(--accent2)", bg: "rgba(255,60,110,0.12)", icon: "⚠️", label: "AI Generated" },
-    Human:  { color: "var(--accent3)", bg: "rgba(109,255,179,0.1)", icon: "✅", label: "Human Written" },
-    Mixed:  { color: "var(--warn)",    bg: "rgba(255,184,48,0.1)",  icon: "⚡", label: "Mixed Content" },
+    AI:     { color: "var(--accent2)", bg: "rgba(255,60,110,0.12)", icon: "alert-triangle", label: "AI Generated" },
+    Human:  { color: "var(--accent3)", bg: "rgba(109,255,179,0.1)", icon: "check-circle", label: "Human Written" },
+    Mixed:  { color: "var(--warn)",    bg: "rgba(255,184,48,0.1)",  icon: "layers", label: "Mixed Content" },
   };
   const c = config[verdict] || config.Mixed;
   const fs = size === "sm" ? 11 : 14;
@@ -79,7 +114,7 @@ export function VerdictBadge({ verdict, size = "md" }) {
       background: c.bg, border: `1px solid ${c.color}`,
       borderRadius: 6, fontSize: fs, color: c.color, fontWeight: 700,
     }}>
-      {c.icon} {c.label}
+      <Icon name={c.icon} size={size === "sm" ? 13 : 16} /> {c.label}
     </span>
   );
 }
