@@ -48,7 +48,7 @@ export default function History() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "48px 20px 80px" }}>
+    <main className="scan-page" style={{ maxWidth: 900, margin: "0 auto", padding: "48px 20px 80px" }}>
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontFamily: "var(--head)", fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: -1 }}>
           Scan History
@@ -93,6 +93,7 @@ export default function History() {
                 <div>
                   {data.scans.map((scan, i) => (
                     <div
+                      className="scan-row"
                       key={scan.id}
                       onClick={() => navigate(`/history/${scan.id}`)}
                       style={{
@@ -163,6 +164,6 @@ export default function History() {
           )}
         </>
       )}
-    </div>
+    </main>
   );
 }
