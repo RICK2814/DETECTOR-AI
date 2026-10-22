@@ -5,15 +5,15 @@ import { Card, CardHeader, Button, Icon } from "./UI";
 const verdictStyle = verdict => {
   switch (verdict) {
     case "TRUE":
-      return { color: "var(--accent3)", background: "rgba(109,255,179,0.10)", label: "TRUE", icon: "check-circle" };
+      return { color: "#65e7b7", background: "rgba(68,225,166,0.12)", label: "TRUE", icon: "check-circle" };
     case "FALSE":
-      return { color: "var(--accent2)", background: "rgba(255,60,110,0.10)", label: "FALSE", icon: "x-circle" };
+      return { color: "#ff718c", background: "rgba(255,87,118,0.12)", label: "FALSE", icon: "x-circle" };
     case "MIXED":
-      return { color: "var(--warn)", background: "rgba(255,184,48,0.10)", label: "MIXED / MISLEADING", icon: "alert-triangle" };
+      return { color: "#ffc978", background: "rgba(255,190,89,0.12)", label: "MIXED / MISLEADING", icon: "alert-triangle" };
     case "SATIRE":
-      return { color: "var(--warn)", background: "rgba(255,184,48,0.14)", label: "SATIRE / HUMOR", icon: "sparkles" };
+      return { color: "#baa5ff", background: "rgba(158,126,255,0.14)", label: "SATIRE / HUMOR", icon: "sparkles" };
     default:
-      return { color: "var(--muted)", background: "rgba(150,160,175,0.08)", label: "UNVERIFIED", icon: "info" };
+      return { color: "#8bc8ff", background: "rgba(81,166,255,0.11)", label: "UNVERIFIED", icon: "info" };
   }
 };
 
@@ -86,7 +86,7 @@ export default function FactCheckResults({ result, onReset }) {
       {claims.map((item, index) => {
         const badge = verdictStyle(item.verdict);
         return (
-          <Card key={item.id || index} className="fc-claim-card" style={{ marginBottom: 16, border: `1px solid ${badge.color}55` }}>
+          <Card key={item.id || index} className={`fc-claim-card fc-claim-card--${String(item.verdict || "unverified").toLowerCase().replace(/[^a-z0-9-]/g, "")}`} style={{ marginBottom: 16, border: `1px solid ${badge.color}55` }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: 18, borderBottom: "1px solid var(--border)" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
@@ -129,7 +129,7 @@ export default function FactCheckResults({ result, onReset }) {
               {Array.isArray(item.sources) && item.sources.length > 0 ? (
                 <div style={{ display: "grid", gap: 10 }}>
                   {item.sources.map((source, sourceIndex) => (
-                    <div key={source.url || sourceIndex} className="fc-source-card" style={{
+                    <div key={source.url || sourceIndex} className={`fc-source-card fc-source-card--${sourceIndex % 4}`} style={{
                       padding: 12, borderRadius: 8, background: "var(--bg)",
                       border: "1px solid var(--border)",
                     }}>

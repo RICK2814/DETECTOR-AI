@@ -9,7 +9,7 @@ const getColor = v =>
 function MiniGauge({ pct, verdict }) {
   const color = getColor(verdict);
   return (
-    <div style={{
+    <div className="result-mini-gauge" style={{
       width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
       background: `conic-gradient(${color} ${pct * 3.6}deg, rgba(255,255,255,0.05) 0deg)`,
       display: "flex", alignItems: "center", justifyContent: "center",
@@ -62,7 +62,7 @@ export default function Results({ result, onReset }) {
       `}</style>
 
       {/* ── Main Verdict Card ── */}
-      <div className="detection-verdict-card" style={{
+      <div className={`detection-verdict-card detection-verdict-card--${String(result.verdict || "mixed").toLowerCase()}`} style={{
         background: "var(--surface)", border: `1px solid ${color}44`,
         borderRadius: 12, padding: "28px 28px", marginBottom: 16,
         position: "relative", overflow: "hidden",
@@ -146,12 +146,12 @@ export default function Results({ result, onReset }) {
           padding:16, gap:8,
         }}>
           {[
-            ["Words",      result.word_count?.toLocaleString(),      "var(--accent)"],
-            ["Sentences",  result.sentence_count,                    "var(--accent)"],
-            ["Avg Len",    result.avg_sentence_length + "w",         "var(--accent)"],
-            ["Paragraphs", result.paragraph_count || "—",            "var(--accent)"],
+            ["Words",      result.word_count?.toLocaleString(),      "#7bdcff"],
+            ["Sentences",  result.sentence_count,                    "#b7a5ff"],
+            ["Avg Len",    result.avg_sentence_length + "w",         "#72e4bd"],
+            ["Paragraphs", result.paragraph_count || "—",            "#ffc978"],
           ].map(([label, val, c]) => (
-            <div key={label} style={{ textAlign:"center" }}>
+            <div key={label} className={`result-stat-tile result-stat-tile--${label.toLowerCase().replace(/\s+/g, "-")}`} style={{ textAlign:"center" }}>
               <div style={{ fontFamily:"var(--head)", fontSize:22, fontWeight:800, color:c }}>{val}</div>
               <div style={{ fontSize:10, color:"var(--muted)", letterSpacing:1, textTransform:"uppercase", marginTop:2 }}>{label}</div>
             </div>
@@ -164,12 +164,12 @@ export default function Results({ result, onReset }) {
         <Card style={{ marginBottom:16 }}>
           <CardHeader>Detection Signals</CardHeader>
           <div style={{ padding:16, display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            {Object.entries(result.signals).map(([key, sig]) => {
+            {Object.entries(result.signals).map(([key, sig], signalIndex) => {
               const label = key.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
               const aiScore = sig.score;
               const barColor = aiScore >= 65 ? "var(--accent2)" : aiScore <= 35 ? "var(--accent3)" : "var(--warn)";
               return (
-                <div key={key} style={{
+                <div key={key} className={`result-signal-card result-signal-card--${signalIndex % 6}`} style={{
                   background:"var(--bg)", border:"1px solid var(--border)",
                   borderRadius:8, padding:12,
                 }}>
@@ -209,7 +209,7 @@ export default function Results({ result, onReset }) {
             <Section title={<><Icon name="flag" size={14}/> Flagged Phrases</>} color="var(--warn)" last>
               <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
                 {result.suspicious_phrases.map((p,i) => (
-                  <span key={i} style={{
+                  <span key={i} className="result-flagged-phrase" style={{
                     fontFamily:"var(--mono)", fontSize:11, padding:"3px 9px", borderRadius:4,
                     border:"1px solid rgba(255,60,110,0.3)", background:"rgba(255,60,110,0.08)", color:"#ff8aa8",
                   }}>"{p}"</span>
@@ -237,7 +237,7 @@ export default function Results({ result, onReset }) {
               {pa.map((p, i) => {
                 const c = getColor(p.verdict);
                 return (
-                  <div key={i} style={{
+                  <div key={i} className={`result-paragraph-card result-paragraph-card--${String(p.verdict || "mixed").toLowerCase()}`} style={{
                     display:"flex", gap:12, padding:"12px 14px", marginBottom:8,
                     background:"var(--bg)", border:`1px solid ${c}33`, borderRadius:8,
                     borderLeft:`3px solid ${c}`,
@@ -290,7 +290,7 @@ export default function Results({ result, onReset }) {
                   ["Para Uniformity",      ds.paragraph_uniformity,  "var(--accent2)", "Higher = more AI-like uniform paras"],
                   ["Repetition Score",     ds.repetition_score,      "var(--accent2)", "Higher = more repetitive (AI)"],
                 ].map(([label, val, color, note]) => (
-                  <div key={label} style={{
+                  <div key={label} className={`result-metric-card result-metric-card--${label.toLowerCase().replace(/\s+/g, "-")}`} style={{
                     padding:10, background:"var(--bg)",
                     border:"1px solid var(--border)", borderRadius:6,
                   }}>
@@ -313,8 +313,9 @@ export default function Results({ result, onReset }) {
 }
 
 function Section({ title, color, children, last }) {
+  const tone = color === "var(--accent2)" ? "ai" : color === "var(--accent3)" ? "human" : "alert";
   return (
-    <div style={{ marginBottom: last ? 0 : 20 }}>
+    <div className={`result-forensic-section result-forensic-section--${tone}`} style={{ marginBottom: last ? 0 : 20 }}>
       <div style={{
         fontSize:11, letterSpacing:1.5, textTransform:"uppercase",
         color, marginBottom:10, display:"flex", alignItems:"center", gap:8,
@@ -336,7 +337,7 @@ function FlagList({ items, color }) {
           padding:"7px 0", borderBottom:"1px solid var(--border)",
           fontSize:13, lineHeight:1.6, color:"var(--text)",
         }}>
-          <span style={{ color, flexShrink:0, marginTop:3 }}>▲</span>{f}
+          <span className="result-flag-marker" style={{ color, flexShrink:0, marginTop:3 }}>▲</span>{f}
         </li>
       ))}
     </ul>
