@@ -39,7 +39,7 @@ export default function FactCheckResults({ result, onReset }) {
         <div style={{ padding: 16, color: "var(--muted)", fontSize: 12, lineHeight: 1.7 }}>
           {claims.length} claim{claims.length === 1 ? "" : "s"} reviewed against retrieved news coverage{result?.factCheckDatabaseAvailable ? " and published fact-checks" : ""}.
           <div style={{ marginTop: 4 }}>
-            Live evidence links: {Number(result?.liveNewsSourceCount || 0)} news report(s) · {Number(result?.publishedFactCheckSourceCount || 0)} published fact-check(s).
+            Independent web/news sources: {Number(result?.liveNewsSourceCount || 0)} · Published fact-checks: {Number(result?.publishedFactCheckSourceCount || 0)}.
           </div>
           <div style={{ marginTop: 4 }}>
             TRUE/FALSE labels require supporting evidence. UNVERIFIED means the available sources were insufficient or did not match the claim well enough.
@@ -61,7 +61,7 @@ export default function FactCheckResults({ result, onReset }) {
             {result.factCheckDatabaseStatus === "not_configured"
               ? "Live news-source searches are still used, but the published fact-check API is not configured."
               : result.factCheckDatabaseStatus === "working_no_matches"
-                ? `No previously published fact-check matched these claims. This is not a verdict. Live news search is still used: ${Number(result?.liveNewsSourceCount || 0)} news source link(s) and ${Number(result?.publishedFactCheckSourceCount || 0)} published fact-check link(s) were retrieved for these claims.`
+                ? `No previously published fact-check matched these claims. This is not a verdict. Live web/news search still runs and found ${Number(result?.liveNewsSourceCount || 0)} independent source link(s); ${Number(result?.publishedFactCheckSourceCount || 0)} existing fact-check link(s) matched.`
                 : result.factCheckDatabaseStatus === "invalid_key_or_request"
                   ? "Google rejected the key or request. Check the API key and request configuration."
                   : result.factCheckDatabaseStatus === "api_disabled_or_key_restricted"
