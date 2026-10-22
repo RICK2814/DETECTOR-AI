@@ -49,7 +49,7 @@ export default function FactCheckResults({ result, onReset }) {
         </div>
       </Card>
 
-      {result?.factCheckDatabaseStatus && result.factCheckDatabaseStatus !== "working_with_matches" && (
+      {result?.factCheckDatabaseStatus && result.factCheckDatabaseStatus !== "working_with_matches" && !(result?.sourceClassification === "satire" && result?.factCheckDatabaseStatus === "working_no_matches") && (
         <Card style={{ marginBottom: 16, padding: 14, border: "1px solid var(--warn)" }}>
           <div style={{ color: "var(--warn)", fontSize: 11, fontWeight: 800, marginBottom: 6 }}>
             {result.factCheckDatabaseStatus === "not_configured" ? "PUBLISHED FACT-CHECK SEARCH NOT CONFIGURED" : result.factCheckDatabaseStatus === "working_no_matches" ? "GOOGLE FACT-CHECK API CONNECTED — NO MATCH" : "GOOGLE FACT-CHECK API NEEDS ATTENTION"}
