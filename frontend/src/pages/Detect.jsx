@@ -344,7 +344,7 @@ export default function Detect() {
                 {wordCount} words{wordCount > 0 && wordCount < 20 ? ` · need ${20 - wordCount} more` : ""}{wordCount >= 20 ? " · ready" : ""}
               </div>
             )}
-            <Button onClick={analyze} disabled={!canAnalyze} style={{ width:"100%", fontSize:14, padding:16 }}>
+            <Button onClick={analyze} disabled={!canAnalyze} className="analyze-premium-button" style={{ width:"100%", fontSize:14, padding:16 }}>
               <Icon name="scan" size={17}/> {showPasteFallback && pastedWc >= 20 ? "Analyze Pasted Text" : "Analyze"}
             </Button>
           </div>
