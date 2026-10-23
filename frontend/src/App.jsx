@@ -223,18 +223,31 @@ function AmbientMotion() {
 
 
 // Adds the same scroll-reveal choreography to newly mounted sections/results.
+// Scroll reveal + pointer-driven 3D tilt/glass response for every major surface.
 function MotionDirector() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
     if (!("IntersectionObserver" in window) || !("MutationObserver" in window)) return undefined;
-    const selector = [
+
+    const revealSelector = [
       ".ui-card", ".detection-verdict-card", ".fc-claim-card", ".fc-source-card",
       ".scan-row", ".stat-box", ".detect-hero", ".detect-mode-switcher",
       ".detect-tabs", ".detect-input", ".detect-actions",
       ".scan-page > div:first-child", ".stats-page > div:first-child", ".detail-page > button"
     ].join(",");
-    const bound = new WeakSet();
+    const immersiveSelector = [
+      ".detect-navbar", ".detect-hero", ".detect-mode-switcher", ".ui-card",
+      ".detection-verdict-card", ".fc-claim-card", ".fc-source-card",
+      ".scan-row", ".stat-box", ".scan-page > div:first-child",
+      ".stats-page > div:first-child", ".detail-page > button",
+      ".result-stat-tile", ".result-signal-card", ".signal-bar", ".result-forensic-section"
+    ].join(",");
+
+    const revealed = new WeakSet();
+    const tiltBound = new WeakSet();
+    const tiltBindings = [];
     let sequence = 0, frame = 0, queued = false;
+
     const revealObserver = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
@@ -242,21 +255,61 @@ function MotionDirector() {
         revealObserver.unobserve(entry.target);
       });
     }, { rootMargin: "0px 0px -5% 0px", threshold: 0.06 });
+
+    const bindTilt = element => {
+      if (tiltBound.has(element)) return;
+      tiltBound.add(element);
+      element.classList.add("immersive-3d");
+
+      const glare = document.createElement("span");
+      glare.className = "immersive-3d__glare";
+      glare.setAttribute("aria-hidden", "true");
+      element.insertBefore(glare, element.firstChild);
+
+      const move = event => {
+        if (event.pointerType === "touch") return;
+        const rect = element.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const nx = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width - 0.5) * 2));
+        const ny = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height - 0.5) * 2));
+        const amp = element.matches(".scan-row, .detect-navbar, .detect-mode-switcher") ? 1.5
+          : element.matches(".detect-hero") ? 2.7
+          : element.matches(".stat-box, .fc-claim-card, .detection-verdict-card") ? 3.7 : 2.4;
+        element.style.setProperty("--immersive-rotate-x", (-ny * amp).toFixed(2) + "deg");
+        element.style.setProperty("--immersive-rotate-y", (nx * amp).toFixed(2) + "deg");
+        element.style.setProperty("--immersive-glare-x", ((nx + 1) * 50).toFixed(1) + "%");
+        element.style.setProperty("--immersive-glare-y", ((ny + 1) * 50).toFixed(1) + "%");
+        element.classList.add("immersive-3d--active");
+      };
+      const leave = () => {
+        element.classList.remove("immersive-3d--active");
+        element.style.setProperty("--immersive-rotate-x", "0deg");
+        element.style.setProperty("--immersive-rotate-y", "0deg");
+        element.style.setProperty("--immersive-glare-x", "50%");
+        element.style.setProperty("--immersive-glare-y", "50%");
+      };
+      element.addEventListener("pointermove", move, { passive: true });
+      element.addEventListener("pointerleave", leave, { passive: true });
+      tiltBindings.push({ element, move, leave, glare });
+    };
+
     const scan = () => {
       queued = false;
-      document.querySelectorAll(selector).forEach(element => {
-        if (bound.has(element)) return;
-        bound.add(element);
+      document.querySelectorAll(revealSelector).forEach(element => {
+        if (revealed.has(element)) return;
+        revealed.add(element);
         element.classList.add("motion-reveal");
         element.style.setProperty("--motion-delay", (Math.min(sequence++ % 5, 4) * 38) + "ms");
         revealObserver.observe(element);
       });
+      document.querySelectorAll(immersiveSelector).forEach(bindTilt);
     };
     const schedule = () => {
       if (queued) return;
       queued = true;
       frame = window.requestAnimationFrame(scan);
     };
+
     scan();
     const mutationObserver = new MutationObserver(schedule);
     mutationObserver.observe(document.body, { childList: true, subtree: true });
@@ -264,6 +317,12 @@ function MotionDirector() {
       mutationObserver.disconnect();
       revealObserver.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
+      tiltBindings.forEach(({ element, move, leave, glare }) => {
+        element.removeEventListener("pointermove", move);
+        element.removeEventListener("pointerleave", leave);
+        glare.remove();
+        element.classList.remove("immersive-3d", "immersive-3d--active");
+      });
     };
   }, []);
   return null;
