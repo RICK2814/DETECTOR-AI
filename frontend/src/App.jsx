@@ -11,17 +11,17 @@ import Stats        from "./pages/Stats";
 
 const authAppearance = {
   variables: {
-    colorPrimary: "#68eaff",
-    colorBackground: "rgba(205, 232, 255, 0.13)",
-    colorForeground: "#eef5ff",
-    colorMuted: "rgba(228, 240, 255, 0.075)",
-    colorMutedForeground: "#a4b5d0",
-    colorInput: "rgba(228, 243, 255, 0.075)",
-    colorInputForeground: "#f1f7ff",
-    colorBorder: "rgba(232, 248, 255, 0.38)",
-    colorNeutral: "#d5e2f6",
-    colorShadow: "rgba(20, 35, 72, 0.16)",
-    borderRadius: "16px",
+    colorPrimary: "#3478c9",
+    colorBackground: "rgba(245, 251, 255, 0.24)",
+    colorForeground: "#12213a",
+    colorMuted: "rgba(255, 255, 255, 0.34)",
+    colorMutedForeground: "#435875",
+    colorInput: "rgba(255, 255, 255, 0.42)",
+    colorInputForeground: "#10203a",
+    colorBorder: "rgba(255, 255, 255, 0.72)",
+    colorNeutral: "#243c5c",
+    colorShadow: "rgba(10, 26, 52, 0.18)",
+    borderRadius: "18px",
     fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
   },
   elements: {
