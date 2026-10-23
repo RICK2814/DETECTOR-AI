@@ -4194,3 +4194,120 @@ body::before {
     backdrop-filter: none !important;
   }
 }
+
+
+/* ── Last-mile Clerk glass polish: eliminate the bright inner panel + enforce contrast ── */
+.auth-clerk-card .detectai-clerk-cardbox,
+.auth-clerk-card .cl-cardBox {
+  position: relative !important;
+  overflow: hidden !important;
+  color: #edf6ff !important;
+  color-scheme: dark !important;
+  border: 1px solid rgba(151, 220, 255, .45) !important;
+  border-radius: 25px !important;
+  background:
+    radial-gradient(ellipse at 94% 0%, rgba(75, 176, 255, .105), transparent 45%),
+    radial-gradient(ellipse at 4% 100%, rgba(131, 91, 255, .10), transparent 48%),
+    linear-gradient(142deg, rgba(11, 23, 43, .91), rgba(6, 13, 27, .88) 57%, rgba(17, 18, 43, .90)) !important;
+  -webkit-backdrop-filter: blur(34px) saturate(135%) !important;
+  backdrop-filter: blur(34px) saturate(135%) !important;
+  box-shadow:
+    0 28px 85px rgba(0,0,0,.38),
+    0 0 0 1px rgba(179,225,255,.055),
+    0 0 45px rgba(64,148,255,.105),
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 1px 0 0 rgba(147,215,255,.08),
+    inset -1px 0 0 rgba(166,136,255,.08) !important;
+}
+.auth-clerk-card .detectai-clerk-main,
+.auth-clerk-card .cl-main {
+  position: relative !important;
+  z-index: 1 !important;
+  color: #edf6ff !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.auth-clerk-card .detectai-clerk-header,
+.auth-clerk-card .cl-header {
+  color: #f5f9ff !important;
+  background: transparent !important;
+}
+.auth-clerk-card .cl-cardBox :is(h1, h2, h3, p, label, small, legend, .cl-headerTitle, .cl-headerSubtitle, .cl-formFieldLabel, .cl-dividerText, .cl-formFieldHintText),
+.auth-clerk-card .detectai-clerk-cardbox :is(h1, h2, h3, p, label, small, legend, .detectai-clerk-title, .detectai-clerk-subtitle, .detectai-clerk-label, .detectai-clerk-divider-text, .detectai-clerk-hint) {
+  color: #eaf3ff !important;
+}
+.auth-clerk-card .cl-cardBox .cl-headerTitle,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-title {
+  color: #f8fbff !important;
+  text-shadow: 0 0 20px rgba(110, 218, 255, .12) !important;
+}
+.auth-clerk-card .cl-cardBox .cl-headerSubtitle,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-subtitle,
+.auth-clerk-card .cl-cardBox .cl-formFieldLabel,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-label,
+.auth-clerk-card .cl-cardBox .cl-dividerText,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-divider-text {
+  color: #bdcce3 !important;
+}
+.auth-clerk-card .cl-cardBox .cl-socialButtonsBlockButton,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-google {
+  color: #f5f8ff !important;
+  border: 1px solid rgba(174, 219, 255, .28) !important;
+  border-radius: 13px !important;
+  background: linear-gradient(125deg, rgba(236,246,255,.095), rgba(167,185,255,.045) 58%, rgba(158,133,255,.07)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.11), 0 7px 18px rgba(0,0,0,.13) !important;
+}
+.auth-clerk-card .cl-cardBox .cl-socialButtonsBlockButtonText,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-google-text {
+  color: #f5f8ff !important;
+}
+.auth-clerk-card .cl-cardBox .cl-formFieldInput,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-input {
+  color: #f2f7ff !important;
+  background: rgba(2, 9, 21, .53) !important;
+  border: 1px solid rgba(141, 195, 245, .31) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+.auth-clerk-card .cl-cardBox .cl-formFieldInput::placeholder,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-input::placeholder {
+  color: #8e9fbc !important;
+  opacity: 1 !important;
+}
+.auth-clerk-card .cl-cardBox .cl-formButtonPrimary,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-primary,
+.auth-clerk-card .cl-cardBox .cl-formButtonPrimary *,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-primary * {
+  color: #061427 !important;
+}
+.auth-clerk-card .cl-cardBox .cl-footer,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-footer,
+.auth-clerk-card .cl-cardBox .cl-footerPages,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-footer-pages {
+  color: #aebfd9 !important;
+  border-top: 1px solid rgba(160, 211, 255, .15) !important;
+  background: rgba(2, 8, 20, .26) !important;
+}
+.auth-clerk-card .cl-cardBox .cl-footer *,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-footer *,
+.auth-clerk-card .cl-cardBox .cl-footerPages *,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-footer-pages * {
+  color: #aebfd9 !important;
+}
+.auth-clerk-card .cl-cardBox .cl-footerActionLink,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-footer-link,
+.auth-clerk-card .cl-cardBox .cl-footerPagesLink,
+.auth-clerk-card .detectai-clerk-cardbox .detectai-clerk-footer-pages-link {
+  color: #79eaff !important;
+}
+@media (max-width: 780px) {
+  .auth-clerk-card .detectai-clerk-cardbox,
+  .auth-clerk-card .cl-cardBox {
+    border-radius: 23px !important;
+    background:
+      radial-gradient(ellipse at 94% 0%, rgba(75,176,255,.09), transparent 45%),
+      linear-gradient(142deg, rgba(11,23,43,.94), rgba(6,13,27,.92) 57%, rgba(17,18,43,.93)) !important;
+  }
+}
