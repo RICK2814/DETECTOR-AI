@@ -4024,3 +4024,173 @@ body::before {
   .auth-clerk-card .detectai-clerk-card,
   .auth-clerk-card .cl-card { background: transparent !important; }
 }
+
+
+/* ── Final contrast fix: dark smoked-glass Clerk card, not pale blue glass ── */
+.auth-clerk-card .detectai-clerk-cardbox,
+.auth-clerk-card .cl-cardBox {
+  color-scheme: dark !important;
+  color: #eef6ff !important;
+  isolation: isolate !important;
+  border: 1px solid rgba(156, 224, 255, .54) !important;
+  border-radius: 26px !important;
+  background:
+    radial-gradient(ellipse at 92% 0%, rgba(80, 194, 255, .14), transparent 42%),
+    radial-gradient(ellipse at 0% 100%, rgba(139, 104, 255, .13), transparent 48%),
+    linear-gradient(145deg, rgba(10, 24, 46, .90), rgba(5, 13, 29, .86) 58%, rgba(18, 19, 49, .88)) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(145%) !important;
+  backdrop-filter: blur(32px) saturate(145%) !important;
+  box-shadow:
+    0 30px 95px rgba(0, 0, 0, .40),
+    0 0 0 1px rgba(165, 222, 255, .07),
+    0 0 46px rgba(69, 157, 255, .13),
+    inset 0 1.5px 0 rgba(255, 255, 255, .30),
+    inset 1px 0 0 rgba(159, 220, 255, .11),
+    inset -1px 0 0 rgba(174, 145, 255, .10) !important;
+}
+.auth-clerk-card .detectai-clerk-cardbox::before,
+.auth-clerk-card .cl-cardBox::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(270px circle at var(--liquid-pointer-x, 50%) var(--liquid-pointer-y, 30%), rgba(255,255,255,.10), transparent 72%),
+    linear-gradient(120deg, rgba(255,255,255,.075), transparent 24%, transparent 70%, rgba(155,128,255,.075)) !important;
+}
+.auth-clerk-card .detectai-clerk-card,
+.auth-clerk-card .cl-card {
+  position: relative !important;
+  z-index: 1 !important;
+  color: #eef6ff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.auth-clerk-card .detectai-clerk-card::before,
+.auth-clerk-card .cl-card::before {
+  display: none !important;
+}
+.auth-clerk-card .cl-headerTitle,
+.auth-clerk-card .detectai-clerk-title {
+  color: #f5f9ff !important;
+  text-shadow: 0 1px 18px rgba(107, 218, 255, .13) !important;
+}
+.auth-clerk-card .cl-headerSubtitle,
+.auth-clerk-card .detectai-clerk-subtitle,
+.auth-clerk-card .cl-formFieldLabel,
+.auth-clerk-card .detectai-clerk-label,
+.auth-clerk-card .cl-formFieldHintText,
+.auth-clerk-card .detectai-clerk-hint,
+.auth-clerk-card .cl-dividerText,
+.auth-clerk-card .detectai-clerk-divider-text {
+  color: #b7c8e2 !important;
+}
+.auth-clerk-card .cl-socialButtonsBlockButton,
+.auth-clerk-card .detectai-clerk-google {
+  color: #f3f8ff !important;
+  border: 1px solid rgba(185, 226, 255, .35) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(125deg, rgba(231, 245, 255, .13), rgba(183, 204, 255, .07) 58%, rgba(176, 151, 255, .09)) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(145%) !important;
+  backdrop-filter: blur(18px) saturate(145%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.13), 0 7px 20px rgba(0,0,0,.13) !important;
+}
+.auth-clerk-card .cl-socialButtonsBlockButtonText,
+.auth-clerk-card .detectai-clerk-google-text {
+  color: #f3f8ff !important;
+}
+.auth-clerk-card .cl-socialButtonsBlockButton:hover,
+.auth-clerk-card .detectai-clerk-google:hover {
+  border-color: rgba(133, 231, 255, .67) !important;
+  background: linear-gradient(125deg, rgba(231,245,255,.19), rgba(183,204,255,.11) 58%, rgba(176,151,255,.14)) !important;
+}
+.auth-clerk-card .cl-formFieldInput,
+.auth-clerk-card .detectai-clerk-input {
+  color: #f3f8ff !important;
+  caret-color: #72eaff !important;
+  border: 1px solid rgba(150, 203, 255, .36) !important;
+  border-radius: 14px !important;
+  background: rgba(3, 11, 25, .56) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055) !important;
+}
+.auth-clerk-card .cl-formFieldInput::placeholder,
+.auth-clerk-card .detectai-clerk-input::placeholder {
+  color: #879bbd !important;
+  opacity: 1 !important;
+}
+.auth-clerk-card .cl-formFieldInput:focus,
+.auth-clerk-card .detectai-clerk-input:focus {
+  border-color: rgba(113, 233, 255, .86) !important;
+  background: rgba(5, 17, 38, .78) !important;
+  box-shadow: 0 0 0 3px rgba(104,234,255,.12), 0 0 24px rgba(70,170,255,.10), inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+.auth-clerk-card .cl-dividerLine,
+.auth-clerk-card .detectai-clerk-divider-line {
+  background: rgba(174, 202, 239, .22) !important;
+}
+.auth-clerk-card .cl-formButtonPrimary,
+.auth-clerk-card .detectai-clerk-primary {
+  color: #061427 !important;
+  border: 1px solid rgba(216, 250, 255, .55) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(105deg, #72eafa, #78c7ff 48%, #a58bff) !important;
+  box-shadow: 0 10px 28px rgba(70,155,255,.20), inset 0 1px 0 rgba(255,255,255,.67) !important;
+}
+.auth-clerk-card .cl-footer,
+.auth-clerk-card .detectai-clerk-footer,
+.auth-clerk-card .cl-footerPages,
+.auth-clerk-card .detectai-clerk-footer-pages {
+  color: #aebfda !important;
+  border-top: 1px solid rgba(160, 211, 255, .18) !important;
+  background: rgba(4, 12, 27, .36) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(24px) !important;
+}
+.auth-clerk-card .cl-footer *,
+.auth-clerk-card .detectai-clerk-footer *,
+.auth-clerk-card .cl-footerPages *,
+.auth-clerk-card .detectai-clerk-footer-pages * {
+  color: #aebfda !important;
+}
+.auth-clerk-card .cl-footerActionLink,
+.auth-clerk-card .detectai-clerk-footer-link,
+.auth-clerk-card .cl-footerPagesLink,
+.auth-clerk-card .detectai-clerk-footer-pages-link {
+  color: #7ceaff !important;
+}
+.auth-clerk-card .cl-badge,
+.auth-clerk-card .detectai-clerk-badge {
+  color: #c7f2ff !important;
+  border-color: rgba(141, 219, 255, .28) !important;
+  background: rgba(38, 76, 121, .5) !important;
+}
+.auth-clerk-card .cl-formFieldErrorText { color: #ff9eb5 !important; }
+.auth-clerk-card .cl-cardBox *,
+.auth-clerk-card .detectai-clerk-cardbox * {
+  text-shadow: none;
+}
+@media (max-width: 780px) {
+  .auth-clerk-card .detectai-clerk-cardbox,
+  .auth-clerk-card .cl-cardBox {
+    background:
+      radial-gradient(ellipse at 92% 0%, rgba(80,194,255,.13), transparent 42%),
+      linear-gradient(145deg, rgba(10,24,46,.92), rgba(5,13,29,.90) 58%, rgba(18,19,49,.91)) !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .auth-clerk-card .detectai-clerk-cardbox,
+  .auth-clerk-card .cl-cardBox {
+    background: #0b162a !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
