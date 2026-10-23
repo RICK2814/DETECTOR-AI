@@ -92,7 +92,14 @@ if (!publishableKey) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
       <AppErrorBoundary>
-        <ClerkProvider publishableKey={publishableKey}>
+        <ClerkProvider
+          publishableKey={publishableKey}
+          afterSignOutUrl="/sign-in"
+          signInUrl="/sign-in"
+          signUpUrl="/sign-up"
+          signInFallbackRedirectUrl="/"
+          signUpFallbackRedirectUrl="/"
+        >
           <BrowserRouter>
             <App />
           </BrowserRouter>
