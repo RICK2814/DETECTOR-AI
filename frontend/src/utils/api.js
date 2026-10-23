@@ -336,6 +336,17 @@ export const detectFile = (file) => {
   }).then(r => r.data);
 };
 
+export const prepareFileUpload = (file) => {
+  const form = new FormData();
+  form.append("file", file);
+  return api.post("/detect/file/prepare", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }).then(response => response.data);
+};
+
+export const analyzePreparedFile = (text, filename) =>
+  api.post("/detect/file/analyze", { text, filename }).then(response => response.data);
+
 const LOCAL_SCAN_KEY = "detector-ai:scan-history:v1";
 const LOCAL_DELETED_KEY = "detector-ai:deleted-scans:v1";
 const LOCAL_SCAN_LIMIT = 500;
