@@ -2362,3 +2362,94 @@ body::before {
     transition: none !important;
   }
 }
+
+
+/* ── Immersive 3D interaction system — section-aware, lightweight and accessible ── */
+.immersive-3d {
+  --immersive-rotate-x: 0deg;
+  --immersive-rotate-y: 0deg;
+  --immersive-glare-x: 50%;
+  --immersive-glare-y: 50%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+.immersive-3d__glare {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  border-radius: inherit;
+  border: 1px solid rgba(170, 231, 255, .08);
+  background:
+    radial-gradient(340px circle at var(--immersive-glare-x, 50%) var(--immersive-glare-y, 50%),
+      rgba(120, 216, 255, .135), transparent 67%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transition: opacity .25s ease, border-color .3s ease;
+}
+.immersive-3d--active > .immersive-3d__glare { opacity: .86; }
+.immersive-3d:focus-within > .immersive-3d__glare { opacity: .28; }
+@media (hover: hover) and (pointer: fine) {
+  .immersive-3d {
+    transition: transform .28s cubic-bezier(.2,.75,.25,1), filter .28s ease;
+  }
+  .immersive-3d.immersive-3d--active {
+    transform:
+      perspective(1200px)
+      rotateX(var(--immersive-rotate-x, 0deg))
+      rotateY(var(--immersive-rotate-y, 0deg))
+      translate3d(0, -2px, 0) !important;
+  }
+  .immersive-3d.immersive-3d--active > .immersive-3d__glare {
+    border-color: rgba(170, 231, 255, .22);
+  }
+  .immersive-3d.detect-navbar.immersive-3d--active {
+    transform:
+      perspective(1800px)
+      rotateX(var(--immersive-rotate-x, 0deg))
+      rotateY(var(--immersive-rotate-y, 0deg)) !important;
+  }
+  .immersive-3d.scan-row.immersive-3d--active {
+    transform:
+      perspective(900px)
+      rotateX(var(--immersive-rotate-x, 0deg))
+      rotateY(var(--immersive-rotate-y, 0deg))
+      translate3d(0, 0, 0) !important;
+  }
+  .detect-nav__link:hover,
+  .ui-button:not(.analyze-premium-button):not(:disabled):hover,
+  .detect-tabs button:hover,
+  .detect-mode-switcher button:hover {
+    transform: perspective(650px) rotateX(3deg) translateY(-1px) scale(1.012) !important;
+    transform-origin: 50% 55%;
+    filter: brightness(1.055);
+  }
+  .detect-actions .analyze-premium-button.immersive-3d.immersive-3d--active:not(:disabled) {
+    transform:
+      perspective(850px)
+      rotateX(var(--immersive-rotate-x, 0deg))
+      rotateY(var(--immersive-rotate-y, 0deg))
+      translate3d(0, -2px, 0) !important;
+  }
+}
+.immersive-3d:active { transition-duration: .12s; }
+@media (max-width: 680px) {
+  .immersive-3d__glare { background-size: cover; }
+  .immersive-3d:active { transform: scale(.995); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .immersive-3d,
+  .immersive-3d.immersive-3d--active,
+  .immersive-3d:active,
+  .detect-nav__link:hover,
+  .ui-button:not(.analyze-premium-button):not(:disabled):hover,
+  .detect-tabs button:hover,
+  .detect-mode-switcher button:hover {
+    transform: none !important;
+    transition: none !important;
+    filter: none !important;
+  }
+  .immersive-3d__glare { display: none !important; }
+}
