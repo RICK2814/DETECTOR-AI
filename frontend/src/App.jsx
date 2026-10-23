@@ -12,15 +12,15 @@ import Stats        from "./pages/Stats";
 const authAppearance = {
   variables: {
     colorPrimary: "#68eaff",
-    colorBackground: "rgba(12, 22, 42, 0.62)",
+    colorBackground: "rgba(205, 232, 255, 0.13)",
     colorForeground: "#eef5ff",
-    colorMuted: "rgba(17, 28, 51, 0.62)",
+    colorMuted: "rgba(228, 240, 255, 0.075)",
     colorMutedForeground: "#a4b5d0",
-    colorInput: "rgba(5, 13, 29, 0.48)",
+    colorInput: "rgba(228, 243, 255, 0.075)",
     colorInputForeground: "#f1f7ff",
-    colorBorder: "rgba(143, 207, 255, 0.28)",
+    colorBorder: "rgba(232, 248, 255, 0.38)",
     colorNeutral: "#d5e2f6",
-    colorShadow: "rgba(0, 0, 0, 0.30)",
+    colorShadow: "rgba(20, 35, 72, 0.16)",
     borderRadius: "16px",
     fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
   },
@@ -115,6 +115,27 @@ export default function App() {
 
 // Animated sign-in environment; the Clerk form itself stays completely intact.
 function AuthExperience({ children }) {
+  const handleLiquidPointerMove = event => {
+    if (event.pointerType === "touch") return;
+    const frame = event.currentTarget;
+    const rect = frame.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+    frame.style.setProperty("--liquid-pointer-x", x.toFixed(1) + "%");
+    frame.style.setProperty("--liquid-pointer-y", y.toFixed(1) + "%");
+    frame.style.setProperty("--liquid-tilt-x", (((x - 50) / 50) * 1.25).toFixed(2) + "deg");
+    frame.style.setProperty("--liquid-tilt-y", (((50 - y) / 50) * 1.25).toFixed(2) + "deg");
+  };
+
+  const resetLiquidPointer = event => {
+    const frame = event.currentTarget;
+    frame.style.setProperty("--liquid-pointer-x", "50%");
+    frame.style.setProperty("--liquid-pointer-y", "30%");
+    frame.style.setProperty("--liquid-tilt-x", "0deg");
+    frame.style.setProperty("--liquid-tilt-y", "0deg");
+  };
+
   return (
     <main className="auth-experience">
       <section className="auth-showcase" aria-label="DetectAI">
@@ -183,7 +204,11 @@ function AuthExperience({ children }) {
       <section className="auth-form-stage" aria-label="Account access">
         <div className="auth-form-stage__ambient" aria-hidden="true" />
         <div className="auth-form-stage__mobile-brand" aria-hidden="true"><span>Detect</span><strong>AI</strong></div>
-        <div className="auth-clerk-card">{children}</div>
+        <div
+          className="auth-clerk-card auth-liquid-glass-frame"
+          onPointerMove={handleLiquidPointerMove}
+          onPointerLeave={resetLiquidPointer}
+        >{children}</div>
         <p className="auth-footnote"><span className="auth-footnote__lock">⌑</span> YOUR ACCOUNT. YOUR WORKSPACE. YOUR INSIGHTS.</p>
       </section>
       <div className="auth-bottom-status" aria-hidden="true"><span /> DETECTAI SYSTEMS ONLINE <i>•</i> ENCRYPTED AUTHENTICATION</div>
