@@ -6,6 +6,34 @@
       "destination": "/api/index.js"
     },
     {
+      "source": "/sign-in",
+      "destination": "/frontend/"
+    },
+    {
+      "source": "/sign-in/(.*)",
+      "destination": "/frontend/"
+    },
+    {
+      "source": "/sign-up",
+      "destination": "/frontend/"
+    },
+    {
+      "source": "/sign-up/(.*)",
+      "destination": "/frontend/"
+    },
+    {
+      "source": "/history",
+      "destination": "/frontend/"
+    },
+    {
+      "source": "/history/(.*)",
+      "destination": "/frontend/"
+    },
+    {
+      "source": "/stats",
+      "destination": "/frontend/"
+    },
+    {
       "source": "/(.*)",
       "destination": "/frontend/$1"
     }
@@ -14,7 +42,9 @@
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
+      "config": {
+        "distDir": "dist"
+      }
     },
     {
       "src": "api/index.js",
