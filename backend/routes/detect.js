@@ -1419,14 +1419,14 @@ router.post("/file/prepare", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
     const text = await extractFromFile(req.file.buffer, req.file.mimetype, req.file.originalname);
-    if (!text || text.trim().split(/\\s+/).length < 20) {
+    if (!text || text.trim().split(/\s+/).length < 20) {
       return res.status(400).json({ error: "File has too little readable text (minimum 20 words)." });
     }
     res.json({
       success: true,
       filename: req.file.originalname,
       text: text.trim(),
-      word_count: text.trim().split(/\\s+/).filter(Boolean).length,
+      word_count: text.trim().split(/\s+/).filter(Boolean).length,
     });
   } catch (err) {
     console.error("[file prepare]", err && err.stack ? err.stack : err);
@@ -1440,7 +1440,7 @@ router.post("/file/analyze", async (req, res) => {
     const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
     const filename = typeof req.body?.filename === "string" ? req.body.filename.slice(0, 255) : "Uploaded file";
     if (!text) return res.status(400).json({ error: "No extracted file text provided." });
-    if (text.split(/\\s+/).filter(Boolean).length < 20) {
+    if (text.split(/\s+/).filter(Boolean).length < 20) {
       return res.status(400).json({ error: "File has too little text (minimum 20 words)." });
     }
     const result = await callGroqDetection(text);
