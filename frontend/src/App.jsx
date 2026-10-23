@@ -49,11 +49,19 @@ export default function App() {
           <Routes>
             <Route
               path="/sign-in/*"
-              element={<SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />}
+              element={
+                <AuthExperience>
+                  <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
+                </AuthExperience>
+              }
             />
             <Route
               path="/sign-up/*"
-              element={<SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />}
+              element={
+                <AuthExperience>
+                  <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
+                </AuthExperience>
+              }
             />
             <Route path="*" element={<Navigate to="/sign-in" replace />} />
           </Routes>
@@ -61,6 +69,86 @@ export default function App() {
         </div>
       </SignedOut>
     </>
+  );
+}
+
+
+
+// Animated sign-in environment; the Clerk form itself stays completely intact.
+function AuthExperience({ children }) {
+  return (
+    <main className="auth-experience">
+      <section className="auth-showcase" aria-label="DetectAI">
+        <div className="auth-showcase__topline">
+          <a className="auth-wordmark" href="/" aria-label="DetectAI home">
+            <span>Detect</span><strong>AI</strong>
+          </a>
+          <span className="auth-wordmark__divider" />
+          <span className="auth-wordmark__tagline">Uncover the truth<br />behind every text</span>
+        </div>
+
+        <div className="auth-showcase__headline">
+          <span className="auth-eyebrow"><i /> INTELLIGENCE · EVIDENCE · CLARITY</span>
+          <h1>Look beyond<br />the <span>words.</span></h1>
+          <p>Discover what’s human, what’s AI, and what deserves a closer look.</p>
+        </div>
+
+        <div className="auth-hologram" aria-hidden="true">
+          <div className="auth-hologram__halo auth-hologram__halo--outer" />
+          <div className="auth-hologram__halo auth-hologram__halo--inner" />
+          <div className="auth-hologram__orbit auth-hologram__orbit--one"><i /></div>
+          <div className="auth-hologram__orbit auth-hologram__orbit--two"><i /></div>
+          <div className="auth-hologram__orbit auth-hologram__orbit--three"><i /></div>
+          <div className="auth-hologram__sphere">
+            <div className="auth-hologram__sphere-grid" />
+            <div className="auth-hologram__sphere-shine" />
+            <span>AI</span>
+          </div>
+          <div className="auth-float-card auth-float-card--file">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 3.75h8l4 4V20H6zM14 3.75v4.5h4M9 12h6M9 15.5h6" /></svg>
+          </div>
+          <div className="auth-float-card auth-float-card--chart">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V12M10 19V5M16 19V9M22 19H2" /></svg>
+          </div>
+          <div className="auth-float-card auth-float-card--scan">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 4.5 4.5M10.5 7.5v6M7.5 10.5h6" /></svg>
+          </div>
+          <span className="auth-particle auth-particle--one" />
+          <span className="auth-particle auth-particle--two" />
+          <span className="auth-particle auth-particle--three" />
+          <span className="auth-particle auth-particle--four" />
+        </div>
+
+        <div className="auth-benefits">
+          <div className="auth-benefit">
+            <span className="auth-benefit__icon auth-benefit__icon--brain">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5a4 4 0 0 0-7-2 4 4 0 0 0-1 7 4.5 4.5 0 0 0 2 8 4 4 0 0 0 6 2V5ZM12 5a4 4 0 0 1 7-2 4 4 0 0 1 1 7 4.5 4.5 0 0 1-2 8 4 4 0 0 1-6 2V5Z" /></svg>
+            </span>
+            <span><strong>AI Detection</strong><small>Understand the signal</small></span>
+          </div>
+          <div className="auth-benefit">
+            <span className="auth-benefit__icon auth-benefit__icon--shield">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" /><path d="m9 12 2 2 4-4" /></svg>
+            </span>
+            <span><strong>Evidence-led</strong><small>Fact-check claims</small></span>
+          </div>
+          <div className="auth-benefit">
+            <span className="auth-benefit__icon auth-benefit__icon--bolt">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h7l-1 8 10-13h-7z" /></svg>
+            </span>
+            <span><strong>Fast & secure</strong><small>Privacy-first access</small></span>
+          </div>
+        </div>
+      </section>
+
+      <section className="auth-form-stage" aria-label="Account access">
+        <div className="auth-form-stage__ambient" aria-hidden="true" />
+        <div className="auth-form-stage__mobile-brand" aria-hidden="true"><span>Detect</span><strong>AI</strong></div>
+        <div className="auth-clerk-card">{children}</div>
+        <p className="auth-footnote"><span className="auth-footnote__lock">⌑</span> YOUR ACCOUNT. YOUR WORKSPACE. YOUR INSIGHTS.</p>
+      </section>
+      <div className="auth-bottom-status" aria-hidden="true"><span /> DETECTAI SYSTEMS ONLINE <i>•</i> ENCRYPTED AUTHENTICATION</div>
+    </main>
   );
 }
 
