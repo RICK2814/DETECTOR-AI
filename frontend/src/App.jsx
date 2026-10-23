@@ -10,6 +10,9 @@ import ScanDetail   from "./pages/ScanDetail";
 import Stats        from "./pages/Stats";
 
 const authAppearance = {
+  // The simple theme removes Clerk's default paper-white surfaces so the
+  // scoped glass styles below can control the whole auth card consistently.
+  theme: "simple",
   variables: {
     colorPrimary: "#6feaff",
     colorBackground: "rgba(8, 17, 35, 0.76)",
@@ -28,6 +31,8 @@ const authAppearance = {
     rootBox: "detectai-clerk-root",
     cardBox: "detectai-clerk-cardbox",
     card: "detectai-clerk-card",
+    main: "detectai-clerk-main",
+    header: "detectai-clerk-header",
     headerTitle: "detectai-clerk-title",
     headerSubtitle: "detectai-clerk-subtitle",
     socialButtonsBlockButton: "detectai-clerk-google",
