@@ -1,6 +1,6 @@
 // pages/Detect.jsx
 import React, { useState, useRef, useCallback } from "react";
-import { detectText, detectUrl, detectFile, factCheckNews } from "../utils/api";
+import { detectText, detectUrl, detectFile, factCheckNews, rememberLocalScan } from "../utils/api";
 import Results from "../components/Results";
 import FactCheckResults from "../components/FactCheckResults";
 import { Card, CardHeader, Button, Spinner, Icon } from "../components/UI";
@@ -87,6 +87,11 @@ export default function Detect() {
         res = await detectFile(file);
       }
 
+      rememberLocalScan(res, {
+        source_type: tab,
+        source_ref: tab === "url" ? (res._source_url || res.url || url.trim()) : tab === "file" ? file?.name : null,
+        input_text: tab === "text" ? text.trim() : tab === "url" && showPasteFallback && pastedWc >= 20 ? pastedText.trim() : "",
+      });
       setResult(res);
     } catch (e) {
       // Special case: all extraction methods failed — show inline paste area
