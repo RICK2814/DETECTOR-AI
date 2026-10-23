@@ -3368,3 +3368,189 @@ body::before {
     backdrop-filter: none !important;
   }
 }
+
+
+/* ── Clerk glass card skin — applied to the actual Clerk DOM, not its wrapper ── */
+.auth-clerk-card .detectai-clerk-root,
+.auth-clerk-card .cl-rootBox {
+  width: 100% !important;
+  max-width: 420px !important;
+}
+.auth-clerk-card .detectai-clerk-cardbox,
+.auth-clerk-card .cl-cardBox {
+  width: 100% !important;
+  max-width: 420px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(163, 215, 255, .54) !important;
+  border-radius: 25px !important;
+  background:
+    radial-gradient(ellipse at 93% 2%, rgba(79, 210, 255, .15), transparent 38%),
+    radial-gradient(ellipse at 100% 74%, rgba(163, 101, 255, .17), transparent 45%),
+    linear-gradient(145deg, rgba(22, 42, 77, .84), rgba(8, 17, 38, .78)) !important;
+  color: #eef5ff !important;
+  -webkit-backdrop-filter: blur(30px) saturate(175%) !important;
+  backdrop-filter: blur(30px) saturate(175%) !important;
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, .38),
+    0 0 0 1px rgba(131, 221, 255, .08),
+    0 0 50px rgba(73, 136, 255, .14),
+    inset 0 1px 0 rgba(255, 255, 255, .24),
+    inset 1px 0 0 rgba(255, 255, 255, .08) !important;
+}
+.auth-clerk-card .detectai-clerk-card,
+.auth-clerk-card .cl-card {
+  width: 100% !important;
+  max-width: none !important;
+  background: transparent !important;
+  color: #eef5ff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.auth-clerk-card .detectai-clerk-title,
+.auth-clerk-card .cl-headerTitle {
+  color: #f2f7ff !important;
+  letter-spacing: -.035em !important;
+  text-shadow: 0 1px 16px rgba(113, 206, 255, .12);
+}
+.auth-clerk-card .detectai-clerk-subtitle,
+.auth-clerk-card .cl-headerSubtitle {
+  color: #a9bbd7 !important;
+}
+.auth-clerk-card .detectai-clerk-label,
+.auth-clerk-card .cl-formFieldLabel {
+  color: #cfddf3 !important;
+  font-weight: 600 !important;
+}
+.auth-clerk-card .detectai-clerk-input,
+.auth-clerk-card .cl-formFieldInput {
+  color: #f1f7ff !important;
+  caret-color: #7ceeff !important;
+  background: rgba(5, 14, 32, .68) !important;
+  border: 1px solid rgba(137, 184, 243, .31) !important;
+  border-radius: 12px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 4px 15px rgba(0,0,0,.08) !important;
+  transition: border-color .22s ease, box-shadow .22s ease, background .22s ease !important;
+}
+.auth-clerk-card .detectai-clerk-input::placeholder,
+.auth-clerk-card .cl-formFieldInput::placeholder {
+  color: #7f91b1 !important;
+}
+.auth-clerk-card .detectai-clerk-input:focus,
+.auth-clerk-card .cl-formFieldInput:focus {
+  border-color: rgba(101, 233, 255, .78) !important;
+  background: rgba(7, 19, 42, .88) !important;
+  box-shadow: 0 0 0 3px rgba(101, 233, 255, .095), 0 0 25px rgba(75, 151, 255, .1) !important;
+  outline: none !important;
+}
+.auth-clerk-card .detectai-clerk-google,
+.auth-clerk-card .cl-socialButtonsBlockButton {
+  min-height: 49px !important;
+  color: #f1f6ff !important;
+  background: linear-gradient(135deg, rgba(255,255,255,.105), rgba(255,255,255,.045)) !important;
+  border: 1px solid rgba(189, 218, 255, .31) !important;
+  border-radius: 13px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 8px 22px rgba(0,0,0,.12) !important;
+  transition: transform .22s ease, border-color .22s ease, background .22s ease, box-shadow .22s ease !important;
+}
+.auth-clerk-card .detectai-clerk-google:hover,
+.auth-clerk-card .cl-socialButtonsBlockButton:hover {
+  background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(120,177,255,.10)) !important;
+  border-color: rgba(160, 226, 255, .62) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,.17), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+.auth-clerk-card .detectai-clerk-primary,
+.auth-clerk-card .cl-formButtonPrimary {
+  min-height: 49px !important;
+  color: #061326 !important;
+  font-weight: 800 !important;
+  border: 1px solid rgba(222, 250, 255, .62) !important;
+  border-radius: 13px !important;
+  background: linear-gradient(110deg, #62edf7 0%, #6fafff 49%, #bb82ff 100%) !important;
+  box-shadow: 0 10px 28px rgba(66, 159, 255, .24), inset 0 1.5px 0 rgba(255,255,255,.72), inset 0 -1px 0 rgba(56,86,163,.20) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.15) !important;
+  transition: transform .22s ease, filter .22s ease, box-shadow .22s ease !important;
+}
+.auth-clerk-card .detectai-clerk-primary:hover,
+.auth-clerk-card .cl-formButtonPrimary:hover {
+  filter: brightness(1.06) saturate(1.06) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 13px 33px rgba(66, 159, 255, .32), inset 0 1.5px 0 rgba(255,255,255,.78) !important;
+}
+.auth-clerk-card .detectai-clerk-divider-line,
+.auth-clerk-card .cl-dividerLine {
+  background: rgba(153, 184, 229, .27) !important;
+}
+.auth-clerk-card .detectai-clerk-divider-text,
+.auth-clerk-card .cl-dividerText {
+  color: #8fa3c3 !important;
+}
+.auth-clerk-card .detectai-clerk-footer,
+.auth-clerk-card .cl-footer {
+  background: rgba(3, 9, 23, .26) !important;
+  border-top: 1px solid rgba(164, 203, 255, .16) !important;
+  color: #9eafcc !important;
+}
+.auth-clerk-card .detectai-clerk-footer-text,
+.auth-clerk-card .cl-footerActionText {
+  color: #9eafcc !important;
+}
+.auth-clerk-card .detectai-clerk-footer-link,
+.auth-clerk-card .cl-footerActionLink {
+  color: #76eaff !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+}
+.auth-clerk-card .detectai-clerk-footer-link:hover,
+.auth-clerk-card .cl-footerActionLink:hover {
+  color: #d2c0ff !important;
+  text-decoration: underline !important;
+}
+.auth-clerk-card .detectai-clerk-hint,
+.auth-clerk-card .cl-formFieldHintText {
+  color: #8ea3c5 !important;
+}
+.auth-clerk-card .detectai-clerk-error,
+.auth-clerk-card .cl-formFieldErrorText,
+.auth-clerk-card .cl-alert {
+  color: #ff9eae !important;
+}
+.auth-clerk-card .detectai-clerk-badge,
+.auth-clerk-card .cl-badge {
+  border-color: rgba(139, 192, 255, .25) !important;
+}
+.auth-clerk-card .cl-formFieldAction,
+.auth-clerk-card .cl-identityPreviewEditButton {
+  color: #7beaff !important;
+}
+.auth-clerk-card .cl-identityPreview {
+  background: rgba(3, 12, 29, .4) !important;
+  border-color: rgba(157, 198, 255, .25) !important;
+}
+.auth-clerk-card .cl-dividerText {
+  text-transform: lowercase !important;
+}
+@media (max-width: 780px) {
+  .auth-clerk-card { width: min(100%, 430px); }
+  .auth-clerk-card .detectai-clerk-cardbox,
+  .auth-clerk-card .cl-cardBox { border-radius: 23px !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .auth-clerk-card .detectai-clerk-cardbox,
+  .auth-clerk-card .cl-cardBox {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: rgba(10, 20, 42, .97) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-clerk-card .detectai-clerk-input,
+  .auth-clerk-card .cl-formFieldInput,
+  .auth-clerk-card .detectai-clerk-google,
+  .auth-clerk-card .cl-socialButtonsBlockButton,
+  .auth-clerk-card .detectai-clerk-primary,
+  .auth-clerk-card .cl-formButtonPrimary {
+    transition: none !important;
+  }
+}
