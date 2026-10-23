@@ -1413,6 +1413,46 @@ router.post("/url", async (req, res) => {
   }
 });
 
+// Stage 1: receive and extract the uploaded file before starting AI analysis.
+// This lets the UI honestly show upload success before the analysis phase begins.
+router.post("/file/prepare", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    const text = await extractFromFile(req.file.buffer, req.file.mimetype, req.file.originalname);
+    if (!text || text.trim().split(/\\s+/).length < 20) {
+      return res.status(400).json({ error: "File has too little readable text (minimum 20 words)." });
+    }
+    res.json({
+      success: true,
+      filename: req.file.originalname,
+      text: text.trim(),
+      word_count: text.trim().split(/\\s+/).filter(Boolean).length,
+    });
+  } catch (err) {
+    console.error("[file prepare]", err && err.stack ? err.stack : err);
+    res.status(err.status || 500).json({ error: err.message || "File upload failed." });
+  }
+});
+
+// Stage 2: analyze the extracted text, then save the detection to scan history.
+router.post("/file/analyze", async (req, res) => {
+  try {
+    const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
+    const filename = typeof req.body?.filename === "string" ? req.body.filename.slice(0, 255) : "Uploaded file";
+    if (!text) return res.status(400).json({ error: "No extracted file text provided." });
+    if (text.split(/\\s+/).filter(Boolean).length < 20) {
+      return res.status(400).json({ error: "File has too little text (minimum 20 words)." });
+    }
+    const result = await callGroqDetection(text);
+    const id = uuidv4();
+    await saveScan(id, "file", filename, text, result, req.ip);
+    res.json({ id, filename, ...result });
+  } catch (err) {
+    console.error("[file analyze]", err && err.stack ? err.stack : err);
+    res.status(err.status || 500).json({ error: err.message || "File analysis failed." });
+  }
+});
+
 router.post("/file", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
