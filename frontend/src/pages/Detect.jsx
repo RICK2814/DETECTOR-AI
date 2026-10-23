@@ -71,14 +71,16 @@ export default function Detect() {
       setUploadPhase("shooting");
       setStatusMsg("Uploading your file…");
       try {
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const shotDelay = reduceMotion ? 180 : 1450;
         const [prepared] = await Promise.all([
           prepareFileUpload(file),
-          new Promise(resolve => window.setTimeout(resolve, 1450)),
+          new Promise(resolve => window.setTimeout(resolve, shotDelay)),
         ]);
         preparedFile = prepared;
         setUploadPhase("success");
         setStatusMsg("Upload successful · Getting analysis ready…");
-        await new Promise(resolve => window.setTimeout(resolve, 780));
+        await new Promise(resolve => window.setTimeout(resolve, reduceMotion ? 180 : 780));
       } catch (e) {
         setUploadPhase(null);
         setStatusMsg("");
