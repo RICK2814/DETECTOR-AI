@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="90" viewBox="0 0 900 90" role="img" aria-label="System online">
+<defs><linearGradient id="bg" x1="0" x2="1"><stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#16103a"/></linearGradient><clipPath id="card"><rect width="900" height="90" rx="14"/></clipPath></defs>
+<g clip-path="url(#card)"><rect width="900" height="90" fill="url(#bg)"/>
+<path d="M0 60 H300 L320 30 L345 80 L365 45 L380 60 H900" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-dasharray="120 900"><animate attributeName="stroke-dashoffset" values="1020;0" dur="3.5s" repeatCount="indefinite"/></path>
+<circle cx="40" cy="45" r="6" fill="#39ff88"><animate attributeName="opacity" values="1;.2;1" dur="1.2s" repeatCount="indefinite"/></circle>
+<text x="60" y="50" font-family="monospace" font-size="14" fill="#39ff88">SYSTEM ONLINE</text>
+<text x="860" y="50" text-anchor="end" font-family="monospace" font-size="13" fill="#9aa7c7">Built with ♥ + Claude AI</text></g>
+<rect x="1" y="1" width="898" height="88" rx="13" fill="none" stroke="#00e5ff" stroke-opacity=".4" stroke-width="1.5"/></svg>
