@@ -2366,6 +2366,7 @@ body::before {
 
 /* ── Immersive 3D interaction system — section-aware, lightweight and accessible ── */
 .immersive-3d {
+  isolation: isolate;
   --immersive-rotate-x: 0deg;
   --immersive-rotate-y: 0deg;
   --immersive-glare-x: 50%;
