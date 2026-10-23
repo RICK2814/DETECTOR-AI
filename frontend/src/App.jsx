@@ -238,7 +238,7 @@ function MotionDirector() {
     const immersiveSelector = [
       ".detect-navbar", ".detect-hero", ".detect-mode-switcher", ".ui-card",
       ".detection-verdict-card", ".fc-claim-card", ".fc-source-card",
-      ".scan-row", ".stat-box", ".scan-page > div:first-child",
+      ".scan-row", ".stat-box", ".detect-actions .analyze-premium-button", ".scan-page > div:first-child",
       ".stats-page > div:first-child", ".detail-page > button",
       ".result-stat-tile", ".result-signal-card", ".signal-bar", ".result-forensic-section"
     ].join(",");
@@ -260,6 +260,9 @@ function MotionDirector() {
       if (tiltBound.has(element)) return;
       tiltBound.add(element);
       element.classList.add("immersive-3d");
+      const originalPosition = element.style.position;
+      const addedRelativePosition = window.getComputedStyle(element).position === "static";
+      if (addedRelativePosition) element.style.position = "relative";
 
       const glare = document.createElement("span");
       glare.className = "immersive-3d__glare";
@@ -290,7 +293,7 @@ function MotionDirector() {
       };
       element.addEventListener("pointermove", move, { passive: true });
       element.addEventListener("pointerleave", leave, { passive: true });
-      tiltBindings.push({ element, move, leave, glare });
+      tiltBindings.push({ element, move, leave, glare, originalPosition, addedRelativePosition });
     };
 
     const scan = () => {
@@ -317,11 +320,12 @@ function MotionDirector() {
       mutationObserver.disconnect();
       revealObserver.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
-      tiltBindings.forEach(({ element, move, leave, glare }) => {
+      tiltBindings.forEach(({ element, move, leave, glare, originalPosition, addedRelativePosition }) => {
         element.removeEventListener("pointermove", move);
         element.removeEventListener("pointerleave", leave);
         glare.remove();
         element.classList.remove("immersive-3d", "immersive-3d--active");
+        if (addedRelativePosition) element.style.position = originalPosition;
       });
     };
   }, []);
