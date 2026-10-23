@@ -81,6 +81,8 @@ DETECTOR-AI/
 
 ## 🚀 Quick Start
 
+<img src="assets/header-quickstart.svg" alt="Quick Start" width="100%"/>
+
 ### Prerequisites
 
 - Node.js and npm
@@ -151,6 +153,8 @@ If your frontend directory is already the current working directory, simply run 
 
 ## 🐳 Docker
 
+<img src="assets/header-docker.svg" alt="Docker Production" width="100%"/>
+
 From the repository root:
 
 ```bash
@@ -171,6 +175,8 @@ docker-compose up --build
 To stop the services, press `Ctrl+C`; to stop detached containers, run `docker-compose down`.
 
 ## 🔌 API Reference
+
+<img src="assets/header-api.svg" alt="API Reference" width="100%"/>
 
 The routes below are exposed by the backend. Run the application locally before sending requests.
 
@@ -223,6 +229,8 @@ The exact response fields and error formats are defined by the backend route han
 
 ## 🗄️ Database
 
+<img src="assets/header-database.svg" alt="Database Schema" width="100%"/>
+
 The SQLite database is stored at `backend/data/detector.db`.
 
 The `scans` records include the following fields:
@@ -248,6 +256,8 @@ A `stats` table is also used for dashboard totals.
 
 ## 🧰 Tech Stack
 
+<img src="assets/header-stack.svg" alt="Tech Stack" width="100%"/>
+
 | Layer | Technologies |
 |---|---|
 | Frontend | React 18, Vite, React Router |
@@ -261,6 +271,8 @@ A `stats` table is also used for dashboard totals.
 
 ## 🔐 Security Notes
 
+<img src="assets/header-security.svg" alt="Security Notes" width="100%"/>
+
 The repository documents these default safeguards:
 
 - **Rate limiting:** 30 requests per minute per IP on detection endpoints.
@@ -272,6 +284,8 @@ The repository documents these default safeguards:
 Before deploying publicly, review the implementation and hosting environment for API authentication, URL allow-listing/SSRF protection, request-size limits, secret handling, data retention, and SQLite persistence. Do not assume the listed controls alone make an internet-facing deployment secure.
 
 ## 📜 License
+
+<img src="assets/header-license.svg" alt="License" width="100%"/>
 
 This project is released under the **MIT License**. See the repository's license file for the full terms.
 
