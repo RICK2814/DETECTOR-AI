@@ -2551,7 +2551,8 @@ body::before {
 .basketball-ball {
   position: absolute;
   z-index: 5;
-  left: 11%;
+  --basketball-start-x: 11%;
+  left: var(--basketball-start-x);
   top: 57%;
   width: 47px; height: 47px;
   filter: drop-shadow(0 8px 7px rgba(0,0,0,.34)) drop-shadow(0 0 7px rgba(255,141,69,.18));
@@ -2613,11 +2614,11 @@ body::before {
   letter-spacing: .25px;
 }
 @keyframes basketball-free-throw {
-  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(.82); opacity: 1; }
-  26% { transform: translate3d(44px, -65px, 0) rotate(190deg) scale(1.03); opacity: 1; }
-  54% { transform: translate3d(min(29vw, 112px), -74px, 0) rotate(430deg) scale(.96); opacity: 1; }
-  77% { transform: translate3d(min(43vw, 166px), -30px, 0) rotate(670deg) scale(.8); opacity: 1; }
-  92%, 100% { transform: translate3d(min(43vw, 166px), -14px, 0) rotate(790deg) scale(.34); opacity: .04; }
+  0% { left: var(--basketball-start-x, 11%); top: 57%; transform: rotate(0deg) scale(.82); opacity: 1; }
+  26% { left: calc(27% - 23px); top: 16%; transform: rotate(190deg) scale(1.03); opacity: 1; }
+  54% { left: calc(45% - 23px); top: 9%; transform: rotate(430deg) scale(.96); opacity: 1; }
+  77% { left: calc(72% - 23px); top: calc(43% - 18px); transform: rotate(670deg) scale(.8); opacity: 1; }
+  92%, 100% { left: calc(72% - 23px); top: calc(43% - 18px); transform: rotate(790deg) scale(.34); opacity: .04; }
 }
 @keyframes basketball-net-swish {
   0%, 100% { transform: skewX(0) scaleX(1) scaleY(1); }
@@ -2636,14 +2637,7 @@ body::before {
   .basketball-rim { right: 19%; width: 46px; }
   .basketball-net { right: calc(19% + 4px); width: 37px; }
   .basketball-success-mark { right: calc(19% + 7px); }
-  .basketball-ball { width: 43px; height: 43px; left: 9%; }
-  @keyframes basketball-free-throw {
-    0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(.82); opacity: 1; }
-    26% { transform: translate3d(35px, -55px, 0) rotate(190deg) scale(1.03); opacity: 1; }
-    54% { transform: translate3d(29vw, -67px, 0) rotate(430deg) scale(.96); opacity: 1; }
-    77% { transform: translate3d(42vw, -27px, 0) rotate(670deg) scale(.8); opacity: 1; }
-    92%, 100% { transform: translate3d(42vw, -12px, 0) rotate(790deg) scale(.34); opacity: .04; }
-  }
+  .basketball-ball { --basketball-start-x: 9%; width: 43px; height: 43px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .basketball-upload-scene--shooting .basketball-ball,
@@ -2653,7 +2647,9 @@ body::before {
     animation: none !important;
   }
   .basketball-upload-scene--shooting .basketball-ball {
-    transform: translate3d(min(43vw, 166px), -14px, 0) scale(.34);
+    left: calc(72% - 23px);
+    top: calc(43% - 18px);
+    transform: scale(.34);
     opacity: .2;
   }
 }
