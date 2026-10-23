@@ -258,6 +258,7 @@ export default function Detect() {
           <button
             key={id}
             type="button"
+            disabled={Boolean(uploadPhase)}
             aria-pressed={mode === id}
             onClick={() => switchMode(id)}
             style={{
@@ -281,7 +282,7 @@ export default function Detect() {
 
           <div className="detect-tabs" style={S.tabs}>
             {[["text","file-text","Paste Text"],["url","globe","From URL"],["file","upload","Upload File"]].map(([id,iconName,label]) => (
-              <button key={id} type="button" aria-pressed={tab === id} onClick={() => { setTab(id); setShowPasteFallback(false); setError(null); }} style={S.tab(tab===id)}>
+              <button key={id} type="button" disabled={Boolean(uploadPhase)} aria-pressed={tab === id} onClick={() => { setTab(id); setShowPasteFallback(false); setError(null); }} style={S.tab(tab===id)}>
                 <Icon name={iconName} size={15}/> {label}
               </button>
             ))}
