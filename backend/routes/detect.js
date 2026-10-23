@@ -1422,11 +1422,14 @@ router.post("/file/prepare", upload.single("file"), async (req, res) => {
     if (!text || text.trim().split(/\s+/).length < 20) {
       return res.status(400).json({ error: "File has too little readable text (minimum 20 words)." });
     }
+    // The detector analyzes the first 4,000 characters; only send that same
+    // bounded snippet back to the browser for the second stage.
+    const analysisText = text.trim().slice(0, 4000);
     res.json({
       success: true,
       filename: req.file.originalname,
-      text: text.trim(),
-      word_count: text.trim().split(/\s+/).filter(Boolean).length,
+      text: analysisText,
+      word_count: analysisText.split(/\s+/).filter(Boolean).length,
     });
   } catch (err) {
     console.error("[file prepare]", err && err.stack ? err.stack : err);
