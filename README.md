@@ -1,306 +1,284 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00e5ff,50:7c4dff,100:0b1020&height=240&section=header&text=DetectAI&fontSize=72&fontColor=ffffff&animation=twinkling&fontAlignY=38&desc=AI%20Text%20Forensics%20Engine&descSize=20&descAlignY=60" alt="DetectAI" width="100%"/>
-
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=3000&pause=900&color=00E5FF&background=00000000&center=true&vCenter=true&width=700&height=40&lines=%F0%9F%A4%96+Booting+DetectAI...;Scanning+text%2C+URLs+and+files;Perplexity+%2B+burstiness+%2B+phrasing;Verdict%3A+HUMAN+or+AI%3F+Let+Claude+decide" alt="typing robot" />
-
-<br/>
+<img src="assets/hero.svg" alt="DetectAI — AI text forensics engine" width="100%"/>
 
 **Detect whether text was written by a human or an AI.**
-Plain text · URLs · file uploads — scored by Claude, saved to SQLite.
 
-<br/>
+Analyze pasted text, public URLs, and supported text files with Claude-powered analysis, then review saved scan results in a SQLite-backed history.
 
-![React](https://img.shields.io/badge/React_18-0d1117?style=for-the-badge&logo=react&logoColor=00e5ff)
+[![React](https://img.shields.io/badge/React-18-0d1117?style=for-the-badge&logo=react&logoColor=00e5ff)](https://react.dev/)
 ![Vite](https://img.shields.io/badge/Vite-0d1117?style=for-the-badge&logo=vite&logoColor=b388ff)
-![Express](https://img.shields.io/badge/Express_4-0d1117?style=for-the-badge&logo=express&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-0d1117?style=for-the-badge&logo=sqlite&logoColor=4da3ff)
-![Docker](https://img.shields.io/badge/Docker-0d1117?style=for-the-badge&logo=docker&logoColor=4da3ff)
-![Claude](https://img.shields.io/badge/Claude_AI-0d1117?style=for-the-badge&logo=anthropic&logoColor=ff9f43)
-![License](https://img.shields.io/badge/License-MIT-0d1117?style=for-the-badge&logoColor=39ff88)
+![Express](https://img.shields.io/badge/Express-4-0d1117?style=for-the-badge&logo=express&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-better--sqlite3-0d1117?style=for-the-badge&logo=sqlite&logoColor=4da3ff)
+![Docker](https://img.shields.io/badge/Docker-ready-0d1117?style=for-the-badge&logo=docker&logoColor=4da3ff)
+![Claude](https://img.shields.io/badge/Anthropic-Claude-0d1117?style=for-the-badge&logo=anthropic&logoColor=ff9f43)
+![License](https://img.shields.io/badge/License-MIT-0d1117?style=for-the-badge)
 
-<br/>
-
-[Quick Start](#-quick-start) · [Docker](#-docker-production) · [API](#-api-reference) · [Database](#-database-schema) · [Security](#-security-notes)
+[Features](#-features) · [Quick Start](#-quick-start) · [Docker](#-docker) · [API Reference](#-api-reference) · [Security](#-security-notes)
 
 </div>
 
-<br/>
+---
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:00e5ff,100:0b1020&height=70&section=header&text=How%20It%20Works&fontSize=28&fontColor=ffffff&animation=fadeIn&fontAlignY=50" alt="How It Works" width="100%"/>
+## ✨ Features
 
-<div align="center">
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=2500&pause=700&color=00E5FF&background=00000000&center=true&vCenter=true&width=600&height=28&lines=%F0%9F%A4%96+MODULE+00+-+PIPELINE;INPUT+%3E+EXTRACT+%3E+CLAUDE+%3E+VERDICT" alt="module 00" />
-</div>
+- **Multiple input types:** analyze pasted text, a web page URL, or an uploaded `.txt`, `.md`, or `.html` file.
+- **AI-assisted analysis:** uses Anthropic Claude to assess writing signals such as phrasing, vocabulary, perplexity, and burstiness.
+- **Readable results:** returns a verdict (`AI`, `Human`, or `Mixed`), an estimated AI probability, confidence, a summary, and flagged phrases/signals where provided by the analyzer.
+- **Scan history:** view previous scans, open an individual result, and delete a scan.
+- **Statistics dashboard:** review aggregate scan statistics.
+- **Local persistence:** stores scan records in SQLite.
+- **Production-minded defaults:** Express security headers, request rate limiting, upload limits, CORS configuration, and Docker/Nginx files.
 
-```mermaid
-flowchart LR
-    A[📥 Input<br/>text · url · file] --> B[🧹 Extract<br/>cheerio · multer]
-    B --> C[🧠 Claude<br/>analysis]
-    C --> D{🔬 Verdict}
-    D --> E[🟢 Human]
-    D --> F[🔴 AI]
-    D --> G[🟡 Mixed]
-    D --> H[(💾 SQLite)]
-```
+> **Important:** AI-text detection is probabilistic, not proof of authorship. Human writing can be flagged as AI-generated and AI-assisted writing can be classified as human. Do not use a detector result as the sole basis for academic, hiring, disciplinary, or other high-impact decisions.
 
-1. **Input** — paste text, give a URL, or upload `.txt` / `.md` / `.html`.
-2. **Extract** — Cheerio scrapes pages, Multer handles uploads, text is trimmed to 8000 chars.
-3. **Analyze** — Claude scores perplexity, burstiness, phrasing and vocabulary.
-4. **Verdict** — `AI`, `Human` or `Mixed`, with probability, confidence, flagged phrases, saved to history.
+## ⚙️ How It Works
 
-<br/>
+<img src="assets/pipeline.svg" alt="Detection pipeline: input, extract, Claude, verdict" width="100%"/>
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:00e5ff,100:0b1020&height=70&section=header&text=Project%20Structure&fontSize=28&fontColor=ffffff&animation=fadeIn&fontAlignY=50" alt="Project Structure" width="100%"/>
+1. **Provide input** — paste text, enter a URL, or upload a supported file.
+2. **Extract content** — the backend fetches/parses URL content or processes the uploaded file.
+3. **Analyze** — extracted text is sent to Claude for signal-based analysis. The documented input is truncated to 8,000 characters before analysis.
+4. **Review the result** — see the verdict and associated analysis details; scan results are saved for later review.
 
-<div align="center">
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=2500&pause=700&color=00E5FF&background=00000000&center=true&vCenter=true&width=600&height=28&lines=%F0%9F%A4%96+MODULE+01+-+ARCHITECTURE;Mapping+backend+and+frontend...;2+services+detected" alt="module 01" />
-</div>
+## 🧱 Project Structure
 
-```
+<img src="assets/header-structure.svg" alt="Project Structure" width="100%"/>
+
+```text
 DETECTOR-AI/
 ├── backend/
-│   ├── server.js          # Express entry point
-│   ├── db.js              # SQLite database (better-sqlite3)
+│   ├── server.js
+│   ├── db.js
 │   ├── routes/
-│   │   ├── detect.js      # POST /api/detect/text|url|file
-│   │   └── history.js     # GET/DELETE /api/history
-│   ├── .env.example       # Copy to .env and fill in
+│   │   ├── detect.js
+│   │   └── history.js
+│   ├── .env.example
 │   ├── Dockerfile
 │   └── package.json
-│
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── main.jsx
 │   │   ├── index.css
-│   │   ├── utils/api.js          # Axios API helpers
+│   │   ├── utils/api.js
 │   │   ├── components/
 │   │   │   ├── Navbar.jsx
-│   │   │   ├── Results.jsx       # Detection results display
-│   │   │   └── UI.jsx            # Shared components
+│   │   │   ├── Results.jsx
+│   │   │   └── UI.jsx
 │   │   └── pages/
-│   │       ├── Detect.jsx        # Main detection page
-│   │       ├── History.jsx       # Scan history
-│   │       ├── ScanDetail.jsx    # Single scan detail
-│   │       └── Stats.jsx         # Statistics dashboard
+│   │       ├── Detect.jsx
+│   │       ├── History.jsx
+│   │       ├── ScanDetail.jsx
+│   │       └── Stats.jsx
 │   ├── vite.config.js
 │   ├── Dockerfile
 │   ├── nginx.conf
 │   └── package.json
-│
 ├── docker-compose.yml
 └── README.md
 ```
 
-<br/>
+## 🚀 Quick Start
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:39ff88,100:0b1020&height=70&section=header&text=Quick%20Start&fontSize=28&fontColor=ffffff&animation=scaleIn&fontAlignY=50" alt="Quick Start" width="100%"/>
+### Prerequisites
 
-<div align="center">
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=2500&pause=700&color=39FF88&background=00000000&center=true&vCenter=true&width=600&height=28&lines=%F0%9F%A4%96+MODULE+02+-+BOOT+SEQUENCE;npm+install...;npm+run+dev...;ALL+SYSTEMS+GO" alt="module 02" />
-</div>
+- Node.js and npm
+- An Anthropic API key
+- Git
 
-### 1 · Clone and install
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/RICK2814/DETECTOR-AI.git
 cd DETECTOR-AI
+```
 
-# Backend
+### 2. Install dependencies
+
+Open a terminal at the repository root:
+
+```bash
 cd backend
 npm install
 
-# Frontend
 cd ../frontend
 npm install
 ```
 
-### 2 · Configure backend
+### 3. Configure the backend
+
+Create a local environment file:
 
 ```bash
-cd backend
+cd ../backend
 cp .env.example .env
 ```
 
-Edit `.env`:
+Set the values in `backend/.env` (keep your actual API key private):
 
 ```env
 PORT=4000
-ANTHROPIC_API_KEY=sk-ant-your-key-here   # Get from console.anthropic.com
+ANTHROPIC_API_KEY=your_anthropic_api_key
 FRONTEND_URL=http://localhost:5173
 ```
 
-### 3 · Start backend
+Get an API key from the [Anthropic Console](https://console.anthropic.com/). Confirm any additional environment variables required by `backend/.env.example`. Never commit `.env` or expose API keys in frontend code.
+
+### 4. Run the backend
 
 ```bash
 cd backend
-npm run dev      # uses nodemon for auto-reload
-# or
-npm start
-```
-
-> 🟢 Backend online at **http://localhost:4000**
-
-### 4 · Start frontend
-
-```bash
-cd frontend
 npm run dev
 ```
 
-> 🟢 Frontend online at **http://localhost:5173**
+For a non-watch run, use `npm start` if configured in `backend/package.json`.
 
-<br/>
+Backend URL: **http://localhost:4000**
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:4da3ff,100:0b1020&height=70&section=header&text=Docker%20Production&fontSize=28&fontColor=ffffff&animation=blinking&fontAlignY=50" alt="Docker Production" width="100%"/>
+### 5. Run the frontend
 
-<div align="center">
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=2500&pause=700&color=4DA3FF&background=00000000&center=true&vCenter=true&width=600&height=28&lines=%F0%9F%A4%96+MODULE+03+-+DEPLOYMENT;Building+containers...;Shipping+to+production" alt="module 03" />
-</div>
+In a second terminal:
 
 ```bash
-# At project root
-cp backend/.env.example backend/.env
-# Edit backend/.env with your ANTHROPIC_API_KEY
+cd DETECTOR-AI/frontend
+npm run dev
+```
 
+Frontend URL: **http://localhost:5173**
+
+If your frontend directory is already the current working directory, simply run `npm run dev`.
+
+## 🐳 Docker
+
+From the repository root:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Add your Anthropic API key to `backend/.env`, then build and start the services:
+
+```bash
 docker-compose up --build
 ```
 
-| Service | URL |
+| Service | Local URL |
 |---|---|
-| 🖥️ Frontend | http://localhost:5173 |
-| ⚙️ Backend API | http://localhost:4000 |
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:4000 |
 
-<br/>
+To stop the services, press `Ctrl+C`; to stop detached containers, run `docker-compose down`.
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:ff9f43,100:0b1020&height=70&section=header&text=API%20Reference&fontSize=28&fontColor=ffffff&animation=twinkling&fontAlignY=50" alt="API Reference" width="100%"/>
+## 🔌 API Reference
 
-<div align="center">
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=2500&pause=700&color=FF9F43&background=00000000&center=true&vCenter=true&width=600&height=28&lines=%F0%9F%A4%96+MODULE+04+-+INTERFACE;POST+%2Fapi%2Fdetect%2Ftext;GET+%2Fapi%2Fhistory;200+OK" alt="module 04" />
-</div>
+The routes below are exposed by the backend. Run the application locally before sending requests.
 
-<details open>
-<summary><b>🔍 Detect</b></summary>
+### Detection
 
-<br/>
+#### Analyze text
 
-**Text**
 ```http
 POST /api/detect/text
 Content-Type: application/json
 
-{ "text": "Your text here..." }
+{
+  "text": "Paste the text you want to analyze."
+}
 ```
 
-**URL**
+#### Analyze a URL
+
 ```http
 POST /api/detect/url
 Content-Type: application/json
 
-{ "url": "https://example.com/article" }
+{
+  "url": "https://example.com/article"
+}
 ```
 
-**File**
+Only submit URLs you are authorized to access. URL fetching should be restricted and validated in production to reduce server-side request forgery (SSRF) risk.
+
+#### Analyze a file
+
 ```http
 POST /api/detect/file
 Content-Type: multipart/form-data
 
-file: <file upload>   (.txt, .md, .html)
+file: <.txt, .md, or .html file>
 ```
 
-</details>
+### History, statistics, and health
 
-<details>
-<summary><b>🕘 History and stats</b></summary>
-
-<br/>
-
-| Method | Endpoint | Description |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| `GET` | `/api/history?page=1&limit=20` | Paginated scan history |
-| `GET` | `/api/history/:id` | Single scan |
-| `DELETE` | `/api/history/:id` | Delete scan |
-| `GET` | `/api/history/stats` | Dashboard stats |
-| `GET` | `/api/health` | Health check |
+| `GET` | `/api/history?page=1&limit=20` | Get paginated scan history |
+| `GET` | `/api/history/:id` | Get one saved scan |
+| `DELETE` | `/api/history/:id` | Delete one saved scan |
+| `GET` | `/api/history/stats` | Get dashboard statistics |
+| `GET` | `/api/health` | Check backend health |
 
-</details>
+The exact response fields and error formats are defined by the backend route handlers.
 
-<br/>
+## 🗄️ Database
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:b388ff,100:0b1020&height=70&section=header&text=Database%20Schema&fontSize=28&fontColor=ffffff&animation=fadeIn&fontAlignY=50" alt="Database Schema" width="100%"/>
+The SQLite database is stored at `backend/data/detector.db`.
 
-<div align="center">
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=2500&pause=700&color=B388FF&background=00000000&center=true&vCenter=true&width=600&height=28&lines=%F0%9F%A4%96+MODULE+05+-+MEMORY+CORE;Indexing+scans...;detector.db+synced" alt="module 05" />
-</div>
+The `scans` records include the following fields:
 
-SQLite database is stored at `backend/data/detector.db`.
-
-**`scans`** table — stores every detection result:
-
-| Column | Type | Description |
-|---|---|---|
-| `id` | TEXT (UUID) | Primary key |
-| `created_at` | DATETIME | Timestamp |
-| `source_type` | TEXT | `text`, `url`, or `file` |
-| `source_ref` | TEXT | URL or filename |
-| `input_text` | TEXT | First 500 chars of input |
-| `word_count` | INTEGER | Total words |
-| `verdict` | TEXT | `AI`, `Human`, or `Mixed` |
-| `ai_prob` | REAL | 0–100 probability |
-| `confidence` | TEXT | Low / Medium / High / Very High |
-| `summary` | TEXT | Analysis summary |
-| `signals` | TEXT | JSON: perplexity / burstiness / etc |
-| `ai_flags` | TEXT | JSON array |
-| `human_flags` | TEXT | JSON array |
-| `phrases` | TEXT | JSON array of flagged phrases |
-| `ip_address` | TEXT | Client IP |
-
-**`stats`** table — running totals for the dashboard.
-
-<br/>
-
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:ff5ca8,100:0b1020&height=70&section=header&text=Tech%20Stack&fontSize=28&fontColor=ffffff&animation=scaleIn&fontAlignY=50" alt="Tech Stack" width="100%"/>
-
-<div align="center">
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=2500&pause=700&color=FF5CA8&background=00000000&center=true&vCenter=true&width=600&height=28&lines=%F0%9F%A4%96+MODULE+06+-+HARDWARE;React+%2B+Express+%2B+SQLite;Powered+by+Claude" alt="module 06" />
-</div>
-
-| Layer | Tech |
+| Field | Meaning |
 |---|---|
-| 🎨 Frontend | React 18, Vite, React Router |
-| ⚙️ Backend | Node.js, Express 4 |
-| 🗄️ Database | SQLite via better-sqlite3 |
-| 🧠 AI | Anthropic Claude (claude-sonnet-4) |
-| 🕸️ Web scraping | Axios + Cheerio |
-| 📤 File uploads | Multer |
-| 🛡️ Security | Helmet, express-rate-limit, CORS |
-| 🚢 Deployment | Docker + Nginx |
+| `id` | Scan UUID |
+| `created_at` | Scan timestamp |
+| `source_type` | Input type: `text`, `url`, or `file` |
+| `source_ref` | Source URL or filename, where applicable |
+| `input_text` | Stored excerpt of the submitted text (first 500 characters) |
+| `word_count` | Word count |
+| `verdict` | `AI`, `Human`, or `Mixed` |
+| `ai_prob` | Estimated AI probability from 0–100 |
+| `confidence` | Analysis confidence label |
+| `summary` | Analysis summary |
+| `signals` | JSON-encoded analysis signals |
+| `ai_flags` / `human_flags` | JSON-encoded signal lists |
+| `phrases` | JSON-encoded flagged phrases |
+| `ip_address` | Client IP field |
 
-<br/>
+A `stats` table is also used for dashboard totals.
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:ff5252,100:0b1020&height=70&section=header&text=Security%20Notes&fontSize=28&fontColor=ffffff&animation=blinking&fontAlignY=50" alt="Security Notes" width="100%"/>
+## 🧰 Tech Stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | React 18, Vite, React Router |
+| Backend | Node.js, Express 4 |
+| Database | SQLite with `better-sqlite3` |
+| AI analysis | Anthropic Claude |
+| URL parsing | Axios and Cheerio |
+| File uploads | Multer |
+| Security | Helmet, `express-rate-limit`, CORS |
+| Deployment | Docker and Nginx |
+
+## 🔐 Security Notes
+
+The repository documents these default safeguards:
+
+- **Rate limiting:** 30 requests per minute per IP on detection endpoints.
+- **Upload limit:** files are capped at 5 MB.
+- **Input length:** text is truncated to 8,000 characters before analysis.
+- **CORS:** configured through `FRONTEND_URL`.
+- **HTTP headers:** Helmet is used to set security-related headers.
+
+Before deploying publicly, review the implementation and hosting environment for API authentication, URL allow-listing/SSRF protection, request-size limits, secret handling, data retention, and SQLite persistence. Do not assume the listed controls alone make an internet-facing deployment secure.
+
+## 📜 License
+
+This project is released under the **MIT License**. See the repository's license file for the full terms.
+
+---
 
 <div align="center">
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=2500&pause=700&color=FF5252&background=00000000&center=true&vCenter=true&width=600&height=28&lines=%F0%9F%A4%96+MODULE+07+-+DEFENSE+GRID;Shields+up...;Threat+level%3A+LOW" alt="module 07" />
+<img src="assets/footer.svg" alt="DetectAI — system online" width="100%"/>
+
+**Built for exploring AI-assisted text analysis.**
 </div>
-
-- 🚦 **Rate limiting:** 30 requests/minute per IP on `/api/detect`
-- 📦 **File uploads** capped at 5 MB
-- ✂️ **Input text** truncated to 8000 characters before sending to Claude
-- 🌐 **CORS** restricted to `FRONTEND_URL`
-- 🪖 **Helmet** sets secure HTTP headers
-
-<br/>
-
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:ffd54f,100:0b1020&height=70&section=header&text=License&fontSize=28&fontColor=ffffff&animation=twinkling&fontAlignY=50" alt="License" width="100%"/>
-
-<div align="center">
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=2500&pause=700&color=FFD54F&background=00000000&center=true&vCenter=true&width=600&height=28&lines=%F0%9F%A4%96+MODULE+08+-+SYSTEM+STATUS;Released+under+MIT;Free+to+use+and+remix" alt="module 08" />
-</div>
-
-Released under the **MIT** license.
-
-<br/>
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0b1020,50:7c4dff,100:00e5ff&height=140&section=footer&text=SYSTEM%20ONLINE&fontSize=30&fontColor=ffffff&animation=twinkling&fontAlignY=65" alt="System online" width="100%"/>
