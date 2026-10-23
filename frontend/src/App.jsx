@@ -9,6 +9,45 @@ import History      from "./pages/History";
 import ScanDetail   from "./pages/ScanDetail";
 import Stats        from "./pages/Stats";
 
+const authAppearance = {
+  variables: {
+    colorPrimary: "#68eaff",
+    colorBackground: "rgba(12, 22, 42, 0.62)",
+    colorForeground: "#eef5ff",
+    colorMuted: "rgba(17, 28, 51, 0.62)",
+    colorMutedForeground: "#a4b5d0",
+    colorInput: "rgba(5, 13, 29, 0.48)",
+    colorInputForeground: "#f1f7ff",
+    colorBorder: "rgba(143, 207, 255, 0.28)",
+    colorNeutral: "#d5e2f6",
+    colorShadow: "rgba(0, 0, 0, 0.30)",
+    borderRadius: "16px",
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+  },
+  elements: {
+    rootBox: "detectai-clerk-root",
+    cardBox: "detectai-clerk-cardbox",
+    card: "detectai-clerk-card",
+    headerTitle: "detectai-clerk-title",
+    headerSubtitle: "detectai-clerk-subtitle",
+    socialButtonsBlockButton: "detectai-clerk-google",
+    socialButtonsBlockButtonText: "detectai-clerk-google-text",
+    dividerLine: "detectai-clerk-divider-line",
+    dividerText: "detectai-clerk-divider-text",
+    formFieldLabel: "detectai-clerk-label",
+    formFieldInput: "detectai-clerk-input",
+    formFieldHintText: "detectai-clerk-hint",
+    formButtonPrimary: "detectai-clerk-primary",
+    footer: "detectai-clerk-footer",
+    footerActionText: "detectai-clerk-footer-text",
+    footerActionLink: "detectai-clerk-footer-link",
+    footerPages: "detectai-clerk-footer-pages",
+    footerPagesLink: "detectai-clerk-footer-pages-link",
+    badge: "detectai-clerk-badge",
+    alert: "detectai-clerk-alert",
+  },
+};
+
 const shellStyle = {
   minHeight: "100vh",
   background: "var(--bg)",
@@ -51,7 +90,7 @@ export default function App() {
               path="/sign-in/*"
               element={
                 <AuthExperience>
-                  <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
+                  <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" appearance={authAppearance} />
                 </AuthExperience>
               }
             />
@@ -59,7 +98,7 @@ export default function App() {
               path="/sign-up/*"
               element={
                 <AuthExperience>
-                  <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
+                  <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" appearance={authAppearance} />
                 </AuthExperience>
               }
             />
