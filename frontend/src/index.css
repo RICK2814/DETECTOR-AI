@@ -3852,3 +3852,175 @@ body::before {
 .auth-clerk-card .cl-footerPages,.auth-clerk-card .detectai-clerk-footer-pages {color:rgba(23,42,69,.74)!important;border-top:1px solid rgba(255,255,255,.56)!important;background:rgba(235,244,255,.20)!important;box-shadow:none!important}
 .auth-clerk-card .cl-footerPages>*,.auth-clerk-card .detectai-clerk-footer-pages>* {color:rgba(23,42,69,.74)!important}
 .auth-clerk-card .detectai-clerk-badge,.auth-clerk-card .cl-badge {color:#18395e!important;border:1px solid rgba(255,255,255,.86)!important;background:rgba(255,255,255,.44)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.98)!important}
+
+
+/* ── Final Liquid Glass correction: one continuous, genuinely translucent pane ── */
+/* Clerk's cardBox wraps the form, sign-up footer and Clerk footer. Make that the glass sheet. */
+.auth-clerk-card .detectai-clerk-cardbox,
+.auth-clerk-card .cl-cardBox {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.72) !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(ellipse at var(--liquid-pointer-x,50%) var(--liquid-pointer-y,30%), rgba(255,255,255,.19), transparent 58%),
+    radial-gradient(ellipse at 0% 100%, rgba(179,169,255,.11), transparent 48%),
+    radial-gradient(ellipse at 100% 0%, rgba(125,232,255,.13), transparent 48%),
+    linear-gradient(140deg, rgba(247,252,255,.24) 0%, rgba(220,237,255,.14) 38%, rgba(235,226,255,.12) 70%, rgba(255,255,255,.20) 100%) !important;
+  background-blend-mode: normal !important;
+  -webkit-backdrop-filter: blur(28px) saturate(205%) brightness(1.18) !important;
+  backdrop-filter: blur(28px) saturate(205%) brightness(1.18) !important;
+  box-shadow:
+    0 28px 80px rgba(0,5,24,.20),
+    0 0 0 1px rgba(255,255,255,.13),
+    0 0 38px rgba(114,204,255,.12),
+    inset 0 1.5px 0 rgba(255,255,255,.96),
+    inset 1px 0 0 rgba(255,255,255,.42),
+    inset -1px 0 0 rgba(207,193,255,.30),
+    inset 0 -1.5px 0 rgba(255,255,255,.42) !important;
+}
+/* Remove the second, heavier panel layer inside the glass sheet. */
+.auth-clerk-card .detectai-clerk-card,
+.auth-clerk-card .cl-card {
+  position: relative !important;
+  z-index: 1 !important;
+  background: transparent !important;
+  color: #142640 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+/* Low-opacity moving specular reflections; the scenery remains visible underneath. */
+.auth-clerk-card .detectai-clerk-card::before,
+.auth-clerk-card .cl-card::before {
+  border: 1px solid rgba(255,255,255,.16) !important;
+  background:
+    radial-gradient(240px circle at var(--liquid-pointer-x,50%) var(--liquid-pointer-y,30%), rgba(255,255,255,.24), transparent 72%),
+    linear-gradient(118deg, rgba(255,255,255,.12), transparent 22%, transparent 68%, rgba(206,190,255,.10)) !important;
+  opacity: .82 !important;
+}
+.auth-clerk-card .detectai-clerk-title,
+.auth-clerk-card .cl-headerTitle { color: #142640 !important; text-shadow: 0 1px 0 rgba(255,255,255,.26) !important; }
+.auth-clerk-card .detectai-clerk-subtitle,
+.auth-clerk-card .cl-headerSubtitle,
+.auth-clerk-card .detectai-clerk-label,
+.auth-clerk-card .cl-formFieldLabel,
+.auth-clerk-card .detectai-clerk-hint,
+.auth-clerk-card .cl-formFieldHintText { color: rgba(20,38,64,.82) !important; }
+
+/* The Google action and field should be glass controls too, not solid white rectangles. */
+.auth-clerk-card .detectai-clerk-google,
+.auth-clerk-card .cl-socialButtonsBlockButton {
+  color: #142640 !important;
+  border: 1px solid rgba(255,255,255,.72) !important;
+  border-radius: 16px !important;
+  background:
+    linear-gradient(125deg, rgba(255,255,255,.43), rgba(234,245,255,.24) 54%, rgba(241,231,255,.27)) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.90), 0 7px 20px rgba(20,42,80,.08) !important;
+}
+.auth-clerk-card .detectai-clerk-google-text,
+.auth-clerk-card .cl-socialButtonsBlockButtonText { color: #142640 !important; }
+.auth-clerk-card .detectai-clerk-google:hover,
+.auth-clerk-card .cl-socialButtonsBlockButton:hover {
+  background: linear-gradient(125deg, rgba(255,255,255,.55), rgba(231,244,255,.32) 54%, rgba(237,224,255,.34)) !important;
+  border-color: rgba(255,255,255,.92) !important;
+  box-shadow: inset 0 1.5px 0 #fff, 0 10px 26px rgba(20,42,80,.11) !important;
+}
+.auth-clerk-card .detectai-clerk-input,
+.auth-clerk-card .cl-formFieldInput {
+  color: #142640 !important;
+  caret-color: #167fb5 !important;
+  border: 1px solid rgba(255,255,255,.78) !important;
+  border-radius: 15px !important;
+  background: linear-gradient(135deg, rgba(255,255,255,.31), rgba(227,241,255,.18)) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(190%) !important;
+  backdrop-filter: blur(18px) saturate(190%) !important;
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.85), inset 0 -1px 0 rgba(148,178,220,.10) !important;
+}
+.auth-clerk-card .detectai-clerk-input::placeholder,
+.auth-clerk-card .cl-formFieldInput::placeholder { color: rgba(26,48,78,.60) !important; }
+.auth-clerk-card .detectai-clerk-input:focus,
+.auth-clerk-card .cl-formFieldInput:focus {
+  border-color: rgba(255,255,255,.98) !important;
+  background: linear-gradient(135deg, rgba(255,255,255,.48), rgba(223,239,255,.30)) !important;
+  box-shadow: 0 0 0 3px rgba(93,191,255,.16), 0 0 22px rgba(105,192,255,.15), inset 0 1.5px 0 #fff !important;
+}
+/* A softly tinted translucent CTA keeps its color without becoming plastic. */
+.auth-clerk-card .detectai-clerk-primary,
+.auth-clerk-card .cl-formButtonPrimary {
+  color: #102440 !important;
+  border: 1px solid rgba(255,255,255,.80) !important;
+  border-radius: 15px !important;
+  background: linear-gradient(112deg, rgba(101,232,246,.82), rgba(113,184,255,.78) 48%, rgba(190,143,255,.82)) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(170%) !important;
+  backdrop-filter: blur(16px) saturate(170%) !important;
+  box-shadow: 0 10px 27px rgba(83,165,255,.18), inset 0 1.5px 0 rgba(255,255,255,.96), inset 0 -1px 0 rgba(62,102,184,.16) !important;
+}
+.auth-clerk-card .detectai-clerk-primary:hover,
+.auth-clerk-card .cl-formButtonPrimary:hover {
+  filter: brightness(1.045) saturate(1.04) !important;
+  transform: translateY(-1px) !important;
+}
+/* Footer surfaces share the same refraction—no separate white footer panel. */
+.auth-clerk-card .detectai-clerk-footer,
+.auth-clerk-card .cl-footer {
+  border-top: 1px solid rgba(255,255,255,.28) !important;
+  color: rgba(20,38,64,.78) !important;
+  background: linear-gradient(110deg, rgba(255,255,255,.09), rgba(224,238,255,.045), rgba(226,215,255,.075)) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.auth-clerk-card .detectai-clerk-footer-text,
+.auth-clerk-card .cl-footerActionText { color: rgba(20,38,64,.78) !important; }
+.auth-clerk-card .detectai-clerk-footer-link,
+.auth-clerk-card .cl-footerActionLink,
+.auth-clerk-card .detectai-clerk-footer-pages-link,
+.auth-clerk-card .cl-footerPagesLink { color: #155a9e !important; text-shadow: 0 1px 0 rgba(255,255,255,.30) !important; }
+.auth-clerk-card .cl-footerPages,
+.auth-clerk-card .detectai-clerk-footer-pages {
+  color: rgba(20,38,64,.72) !important;
+  border-top: 1px solid rgba(255,255,255,.20) !important;
+  background: rgba(255,255,255,.045) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.auth-clerk-card .cl-footerPages > *,
+.auth-clerk-card .detectai-clerk-footer-pages > * { color: rgba(20,38,64,.72) !important; }
+@media (hover: hover) and (pointer: fine) {
+  .auth-clerk-card:hover .detectai-clerk-cardbox,
+  .auth-clerk-card:hover .cl-cardBox {
+    border-color: rgba(255,255,255,.91) !important;
+    box-shadow:
+      0 30px 88px rgba(0,5,24,.22),
+      0 0 0 1px rgba(255,255,255,.20),
+      0 0 44px rgba(114,204,255,.17),
+      inset 0 1.5px 0 #fff,
+      inset 1px 0 0 rgba(255,255,255,.54),
+      inset -1px 0 0 rgba(207,193,255,.36),
+      inset 0 -1.5px 0 rgba(255,255,255,.52) !important;
+  }
+}
+@media (max-width: 780px) {
+  .auth-clerk-card .detectai-clerk-cardbox,
+  .auth-clerk-card .cl-cardBox {
+    border-radius: 25px !important;
+    -webkit-backdrop-filter: blur(23px) saturate(195%) brightness(1.12) !important;
+    backdrop-filter: blur(23px) saturate(195%) brightness(1.12) !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .auth-clerk-card .detectai-clerk-cardbox,
+  .auth-clerk-card .cl-cardBox {
+    background: rgba(235,244,255,.92) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .auth-clerk-card .detectai-clerk-card,
+  .auth-clerk-card .cl-card { background: transparent !important; }
+}
