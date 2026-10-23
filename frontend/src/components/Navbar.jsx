@@ -53,7 +53,6 @@ export default function Navbar() {
         <div className="detect-navbar__actions">
           <span className="detect-beta"><span className="detect-beta__dot" /> BETA ACCESS</span>
           <UserButton
-            afterSignOutUrl="/sign-in"
             appearance={{
               elements: {
                 avatarBox: { width: 36, height: 36, border: "1px solid rgba(123,231,255,.3)", boxShadow: "0 0 18px rgba(123,231,255,.08)" },
