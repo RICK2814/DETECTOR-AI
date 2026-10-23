@@ -336,9 +336,92 @@ export const detectFile = (file) => {
   }).then(r => r.data);
 };
 
-export const getHistory  = (p = 1, l = 20) => api.get(`/history?page=${p}&limit=${l}`).then(r => r.data);
-export const getScanById = (id) => api.get(`/history/${id}`).then(r => r.data);
-export const deleteScan  = (id) => api.delete(`/history/${id}`).then(r => r.data);
+const LOCAL_SCAN_KEY = "detector-ai:scan-history:v1";
+const LOCAL_DELETED_KEY = "detector-ai:deleted-scans:v1";
+const LOCAL_SCAN_LIMIT = 500;
+
+function readLocalScans() {
+  if (typeof window === "undefined") return [];
+  try { const value = JSON.parse(window.localStorage.getItem(LOCAL_SCAN_KEY) || "[]"); return Array.isArray(value) ? value : []; } catch { return []; }
+}
+function writeLocalScans(scans) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(LOCAL_SCAN_KEY, JSON.stringify(scans.slice(0, LOCAL_SCAN_LIMIT))); }
+  catch (err) { console.warn("[history] Could not save local history:", err); }
+}
+function readDeletedScanIds() {
+  if (typeof window === "undefined") return [];
+  try { const value = JSON.parse(window.localStorage.getItem(LOCAL_DELETED_KEY) || "[]"); return Array.isArray(value) ? value : []; } catch { return []; }
+}
+function writeDeletedScanIds(ids) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(LOCAL_DELETED_KEY, JSON.stringify(ids.slice(-LOCAL_SCAN_LIMIT))); }
+  catch (err) { console.warn("[history] Could not save deleted scan markers:", err); }
+}
+
+// Keep a local backup because Vercel serverless /tmp storage is not durable.
+export const rememberLocalScan = (result, metadata = {}) => {
+  if (!result || typeof window === "undefined") return;
+  const inputText = String(metadata.input_text || result.input_text || "").slice(0, 500);
+  const computedWords = inputText.trim() ? inputText.trim().split(/\s+/).filter(Boolean).length : 0;
+  const id = result.id || ("local-" + Date.now() + "-" + Math.random().toString(36).slice(2, 9));
+  const scan = {
+    ...result, id, created_at: new Date().toISOString(),
+    source_type: metadata.source_type || result.source_type || "text",
+    source_ref: metadata.source_ref || result.source_ref || result.url || result.filename || result._source_url || null,
+    input_text: inputText, word_count: Number(result.word_count ?? computedWords),
+    verdict: result.verdict || "Unverified",
+    ai_prob: Number(result.ai_prob ?? result.ai_probability ?? 0),
+    ai_probability: Number(result.ai_probability ?? result.ai_prob ?? 0),
+    confidence: result.confidence || "Unknown", summary: result.summary || "",
+    signals: result.signals || {}, ai_flags: result.ai_flags || [], human_flags: result.human_flags || [],
+    phrases: result.phrases || result.suspicious_phrases || [],
+    suspicious_phrases: result.suspicious_phrases || result.phrases || [],
+    _local_backup: true,
+  };
+  writeDeletedScanIds(readDeletedScanIds().filter(deletedId => deletedId !== id));
+  writeLocalScans([scan, ...readLocalScans().filter(item => item.id !== id)]);
+  return scan;
+};
+
+export const getHistory = async (p = 1, l = 20) => {
+  const localScans = readLocalScans();
+  const deletedIds = new Set(readDeletedScanIds());
+  let serverScans = []; let serverError = null;
+  try {
+    const first = await api.get("/history?page=1&limit=100");
+    serverScans = Array.isArray(first.data?.scans) ? first.data.scans : [];
+    const pages = Math.min(Number(first.data?.pagination?.pages || 1), 25);
+    if (pages > 1) {
+      const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) =>
+        api.get("/history?page=" + (i + 2) + "&limit=100").then(r => r.data?.scans || []).catch(() => [])
+      ));
+      serverScans = serverScans.concat(...rest);
+    }
+  } catch (err) { serverError = err; }
+  if (serverError && !localScans.length) throw serverError;
+  const unique = new Map();
+  for (const scan of serverScans) if (scan?.id && !deletedIds.has(scan.id)) unique.set(scan.id, scan);
+  for (const scan of localScans) if (scan?.id && !deletedIds.has(scan.id) && !unique.has(scan.id)) unique.set(scan.id, scan);
+  const all = Array.from(unique.values()).sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const page = Math.max(1, Number(p) || 1); const limit = Math.max(1, Number(l) || 20); const start = (page - 1) * limit;
+  return { scans: all.slice(start, start + limit), pagination: { total: all.length, page, limit, pages: Math.ceil(all.length / limit) } };
+};
+
+export const getScanById = async (id) => {
+  if (readDeletedScanIds().includes(id)) throw new Error("Scan not found");
+  try { return (await api.get("/history/" + id)).data; }
+  catch (err) { const local = readLocalScans().find(scan => scan.id === id); if (local) return local; throw err; }
+};
+
+export const deleteScan = async (id) => {
+  const localScans = readLocalScans(); const hadLocal = localScans.some(scan => scan.id === id);
+  writeLocalScans(localScans.filter(scan => scan.id !== id));
+  writeDeletedScanIds([...new Set([...readDeletedScanIds(), id])]);
+  try { return (await api.delete("/history/" + id)).data; }
+  catch (err) { if (hadLocal) return { success: true, id, localOnly: true }; throw err; }
+};
+
 export const getStats    = ()   => api.get("/history/stats").then(r => r.data);
 export const checkHealth = ()   => api.get("/health").then(r => r.data);
 
