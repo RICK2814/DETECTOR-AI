@@ -1,6 +1,6 @@
 // pages/Detect.jsx
 import React, { useState, useRef, useCallback } from "react";
-import { detectText, detectUrl, detectFile, factCheckNews, rememberLocalScan } from "../utils/api";
+import { detectText, detectUrl, prepareFileUpload, analyzePreparedFile, factCheckNews, rememberLocalScan } from "../utils/api";
 import Results from "../components/Results";
 import FactCheckResults from "../components/FactCheckResults";
 import { Card, CardHeader, Button, Spinner, Icon } from "../components/UI";
@@ -30,6 +30,7 @@ export default function Detect() {
   const [result,    setResult]    = useState(null);
   const [error,     setError]     = useState(null);
   const [dragging,  setDragging]  = useState(false);
+  const [uploadPhase, setUploadPhase] = useState(null); // shooting | success
 
   // Separate mode for evidence-backed news claim verification.
   const [mode, setMode] = useState("ai");
@@ -53,7 +54,7 @@ export default function Detect() {
   const wordCount = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
   const pastedWc  = pastedText.trim().split(/\s+/).filter(Boolean).length;
 
-  const canAnalyze = !loading && (
+  const canAnalyze = !loading && !uploadPhase && (
     (tab === "text" && wordCount >= 20) ||
     (tab === "url"  && (url.trim().startsWith("http") || (showPasteFallback && pastedWc >= 20))) ||
     (tab === "file" && file)
@@ -62,9 +63,33 @@ export default function Detect() {
   const analyze = useCallback(async () => {
     setError(null);
     setResult(null);
+    let preparedFile = null;
+
+    // Real two-stage flow: transfer/extract file first, show the made shot,
+    // then begin AI analysis only after the server confirms the upload.
+    if (tab === "file" && file) {
+      setUploadPhase("shooting");
+      setStatusMsg("Uploading your file…");
+      try {
+        const [prepared] = await Promise.all([
+          prepareFileUpload(file),
+          new Promise(resolve => window.setTimeout(resolve, 1450)),
+        ]);
+        preparedFile = prepared;
+        setUploadPhase("success");
+        setStatusMsg("Upload successful · Getting analysis ready…");
+        await new Promise(resolve => window.setTimeout(resolve, 780));
+      } catch (e) {
+        setUploadPhase(null);
+        setStatusMsg("");
+        setError(getReadableError(e));
+        return;
+      }
+      setUploadPhase(null);
+    }
+
     setLoading(true);
     setStatusMsg("Starting…");
-
     try {
       let res;
 
@@ -73,7 +98,6 @@ export default function Detect() {
         res = await detectText(text.trim());
 
       } else if (tab === "url") {
-        // If user pasted text manually after failed extraction
         if (showPasteFallback && pastedWc >= 20) {
           setStatusMsg("Analyzing pasted text…");
           res = await detectText(pastedText.trim());
@@ -83,8 +107,8 @@ export default function Detect() {
         }
 
       } else {
-        setStatusMsg("Reading file…");
-        res = await detectFile(file);
+        setStatusMsg("Analyzing uploaded file…");
+        res = await analyzePreparedFile(preparedFile.text, preparedFile.filename || file?.name || "Uploaded file");
       }
 
       rememberLocalScan(res, {
@@ -94,7 +118,6 @@ export default function Detect() {
       });
       setResult(res);
     } catch (e) {
-      // Special case: all extraction methods failed — show inline paste area
       if (e.extractionFailed) {
         setShowPasteFallback(true);
         setStatusMsg("");
@@ -105,6 +128,7 @@ export default function Detect() {
     } finally {
       setLoading(false);
       setStatusMsg("");
+      setUploadPhase(null);
     }
   }, [tab, text, url, file, showPasteFallback, pastedText, pastedWc]);
 
@@ -129,11 +153,11 @@ export default function Detect() {
     setMode(nextMode);
     setResult(null); setError(null); setStatusMsg("");
     setFactCheckResult(null); setFactCheckError(null);
-    setLoading(false); setFactLoading(false);
+    setLoading(false); setFactLoading(false); setUploadPhase(null);
   };
 
   const reset = () => {
-    setResult(null); setError(null); setStatusMsg("");
+    setResult(null); setError(null); setStatusMsg(""); setUploadPhase(null);
     setText(""); setUrl(""); setFile(null);
     setShowPasteFallback(false); setPastedText("");
     setFactText(""); setFactUrl(""); setFactInputTab("text");
@@ -142,8 +166,9 @@ export default function Detect() {
 
   const handleDrop = e => {
     e.preventDefault(); setDragging(false);
+    if (uploadPhase) return;
     const f = e.dataTransfer.files[0];
-    if (f) setFile(f);
+    if (f) { setFile(f); setUploadPhase(null); }
   };
 
   // ── inline styles ──
@@ -323,22 +348,56 @@ export default function Detect() {
             {/* FILE TAB */}
             {tab === "file" && (
               <div
-                onClick={() => fileRef.current.click()}
-                onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                onClick={e => { if (e.target === fileRef.current || uploadPhase) return; fileRef.current?.click(); }}
+                onDragOver={e => { e.preventDefault(); if (!uploadPhase) setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleDrop}
-                className="detect-dropzone"
+                onKeyDown={e => { if (!uploadPhase && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); fileRef.current?.click(); } }}
+                role="button"
+                tabIndex={uploadPhase ? -1 : 0}
+                aria-label={file ? `Selected file: ${file.name}. Click to change file.` : "Choose or drop a file to upload"}
+                aria-disabled={Boolean(uploadPhase)}
+                className={`detect-dropzone${uploadPhase ? " detect-dropzone--uploading" : ""}`}
                 style={S.drop(dragging)}
               >
                 <input ref={fileRef} type="file" accept=".txt,.md,.html,.htm,.pdf"
-                  style={{ display:"none" }} onChange={e => setFile(e.target.files[0])} />
-                <div className="detect-file-visual"><Icon name={file ? "file-text" : "upload"} size={32}/></div>
-                <p style={{ fontSize:13, color:"var(--muted)", lineHeight:1.7 }}>
-                  {file
-                    ? <strong style={{ color:"var(--text)" }}>{file.name}</strong>
-                    : <><strong style={{ color:"var(--text)" }}>Click or drag</strong> to upload<br/>.txt · .md · .html · .pdf</>
-                  }
-                </p>
+                  style={{ display:"none" }} disabled={Boolean(uploadPhase)}
+                  onChange={e => { const selected = e.target.files?.[0] || null; setFile(selected); setUploadPhase(null); e.target.value = ""; }} />
+                {uploadPhase ? (
+                  <div className={`basketball-upload-scene basketball-upload-scene--${uploadPhase}`} role="status" aria-live="polite">
+                    <div className="basketball-court-floor" aria-hidden="true" />
+                    <div className="basketball-backboard" aria-hidden="true" />
+                    <div className="basketball-rim" aria-hidden="true" />
+                    <div className="basketball-net" aria-hidden="true"><i /><i /><i /><i /></div>
+                    {uploadPhase === "success" ? (
+                      <div className="basketball-success-mark" aria-hidden="true"><Icon name="check-circle" size={25} /></div>
+                    ) : (
+                      <div className="basketball-ball" aria-hidden="true">
+                        <svg viewBox="0 0 52 52" role="presentation">
+                          <defs><radialGradient id="basketballFill" cx="30%" cy="24%" r="80%"><stop offset="0%" stopColor="#ffc17a" /><stop offset="48%" stopColor="#f58a3c" /><stop offset="100%" stopColor="#b94b1f" /></radialGradient></defs>
+                          <circle cx="26" cy="26" r="23" fill="url(#basketballFill)" stroke="#ffcf92" strokeWidth="1.3" />
+                          <path d="M3.5 26h45M26 3.5c-8 8-11 15-11 22.5s3 14.5 11 22.5M26 3.5c8 8 11 15 11 22.5S34 40.5 26 48.5M7 12c12 7 26 21 38 28M7 40c12-7 26-21 38-28" fill="none" stroke="#713315" strokeWidth="2.2" strokeLinecap="round" />
+                          <ellipse cx="18" cy="12" rx="8" ry="4" fill="rgba(255,235,193,.38)" transform="rotate(-28 18 12)" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="basketball-upload-copy">
+                      <strong>{uploadPhase === "success" ? "UPLOAD SUCCESSFUL" : "TAKING THE SHOT"}</strong>
+                      <span>{uploadPhase === "success" ? "File secured · Preparing AI analysis" : "Sending your file through the net…"}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="detect-file-visual"><Icon name={file ? "file-text" : "upload"} size={32}/></div>
+                    <p style={{ fontSize:13, color:"var(--muted)", lineHeight:1.7 }}>
+                      {file
+                        ? <strong style={{ color:"var(--text)" }}>{file.name}</strong>
+                        : <><strong style={{ color:"var(--text)" }}>Click or drag</strong> to upload<br/>.txt · .md · .html · .pdf</>
+                      }
+                    </p>
+                    {file && <span className="basketball-file-hint">Ready to shoot · Press Analyze to upload</span>}
+                  </>
+                )}
               </div>
             )}
           </div>
