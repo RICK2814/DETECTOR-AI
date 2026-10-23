@@ -3554,3 +3554,249 @@ body::before {
     transition: none !important;
   }
 }
+
+
+/* ── Liquid Glass auth pass: clear, refractive, light-responsive (not a dark card) ── */
+.auth-experience {
+  --liquid-pointer-x: 50%;
+  --liquid-pointer-y: 30%;
+  --liquid-tilt-x: 0deg;
+  --liquid-tilt-y: 0deg;
+}
+.auth-clerk-card,
+.auth-clerk-card .detectai-clerk-root,
+.auth-clerk-card .cl-rootBox,
+.auth-clerk-card .detectai-clerk-cardbox,
+.auth-clerk-card .cl-cardBox {
+  background: transparent !important;
+}
+.auth-clerk-card {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+.auth-clerk-card .detectai-clerk-card,
+.auth-clerk-card .cl-card {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(229, 248, 255, .67) !important;
+  border-radius: 26px !important;
+  color: #f5f9ff !important;
+  background:
+    radial-gradient(360px circle at var(--liquid-pointer-x, 50%) var(--liquid-pointer-y, 30%), rgba(241, 252, 255, .26), transparent 70%),
+    radial-gradient(ellipse at 4% 100%, rgba(143, 131, 255, .14), transparent 43%),
+    radial-gradient(ellipse at 96% 0%, rgba(119, 233, 255, .18), transparent 43%),
+    linear-gradient(138deg, rgba(220, 243, 255, .17) 0%, rgba(190, 218, 255, .075) 32%, rgba(207, 213, 255, .055) 67%, rgba(246, 252, 255, .12) 100%) !important;
+  background-blend-mode: screen, screen, screen, normal !important;
+  -webkit-backdrop-filter: blur(22px) saturate(190%) brightness(1.12) !important;
+  backdrop-filter: blur(22px) saturate(190%) brightness(1.12) !important;
+  box-shadow:
+    0 26px 78px rgba(0, 4, 18, .22),
+    0 0 0 1px rgba(228, 249, 255, .12),
+    0 0 34px rgba(102, 199, 255, .10),
+    inset 0 1.5px 0 rgba(255,255,255,.88),
+    inset 1.2px 0 0 rgba(226,248,255,.28),
+    inset -1px 0 0 rgba(194,171,255,.19),
+    inset 0 -1.5px 0 rgba(188,167,255,.30) !important;
+  transform:
+    rotateX(var(--liquid-tilt-y, 0deg))
+    rotateY(var(--liquid-tilt-x, 0deg))
+    translateZ(0);
+  transform-style: preserve-3d;
+  transition:
+    transform .24s cubic-bezier(.2,.75,.25,1),
+    border-color .28s ease,
+    box-shadow .28s ease,
+    background-color .28s ease !important;
+}
+.auth-clerk-card .detectai-clerk-card::before,
+.auth-clerk-card .cl-card::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(210px circle at var(--liquid-pointer-x, 50%) var(--liquid-pointer-y, 30%), rgba(255,255,255,.23), transparent 75%),
+    linear-gradient(118deg, rgba(255,255,255,.19), transparent 18%, transparent 67%, rgba(200,176,255,.10));
+  opacity: .92;
+}
+.auth-clerk-card .detectai-clerk-card::after,
+.auth-clerk-card .cl-card::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -25%;
+  bottom: -25%;
+  left: -85%;
+  width: 53%;
+  border-radius: 60%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), rgba(212,246,255,.27), transparent);
+  filter: blur(7px);
+  transform: rotate(17deg);
+  animation: liquid-glass-reflection 9s cubic-bezier(.4,0,.2,1) infinite;
+}
+.auth-clerk-card .detectai-clerk-card > *,
+.auth-clerk-card .cl-card > * { position: relative; z-index: 1; }
+.auth-clerk-card .cl-headerTitle,
+.auth-clerk-card .detectai-clerk-title {
+  color: #f7fbff !important;
+  font-weight: 750 !important;
+  letter-spacing: -.035em !important;
+  text-shadow: 0 1px 15px rgba(190,228,255,.12);
+}
+.auth-clerk-card .cl-headerSubtitle,
+.auth-clerk-card .detectai-clerk-subtitle,
+.auth-clerk-card .cl-formFieldLabel,
+.auth-clerk-card .detectai-clerk-label,
+.auth-clerk-card .cl-formFieldHintText,
+.auth-clerk-card .detectai-clerk-hint {
+  color: rgba(235,245,255,.84) !important;
+}
+.auth-clerk-card .cl-socialButtonsBlockButton,
+.auth-clerk-card .detectai-clerk-google {
+  min-height: 49px !important;
+  color: #f6fbff !important;
+  border: 1px solid rgba(245,252,255,.48) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(125deg, rgba(255,255,255,.19), rgba(228,242,255,.075) 54%, rgba(205,194,255,.10)) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(170%) !important;
+  backdrop-filter: blur(22px) saturate(170%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.67),
+    inset 1px 0 0 rgba(255,255,255,.13),
+    0 7px 22px rgba(0,0,0,.10) !important;
+  transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease, background .24s ease !important;
+}
+.auth-clerk-card .cl-socialButtonsBlockButton:hover,
+.auth-clerk-card .detectai-clerk-google:hover {
+  transform: translateY(-1px) scale(1.006) !important;
+  border-color: rgba(255,255,255,.78) !important;
+  background: linear-gradient(125deg, rgba(255,255,255,.25), rgba(225,240,255,.11) 54%, rgba(200,186,255,.17)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.78), 0 11px 28px rgba(0,0,0,.13), 0 0 0 3px rgba(134,221,255,.055) !important;
+}
+.auth-clerk-card .cl-socialButtonsBlockButtonText,
+.auth-clerk-card .detectai-clerk-google-text { color: #f8fbff !important; font-weight: 650 !important; }
+.auth-clerk-card .cl-dividerLine,
+.auth-clerk-card .detectai-clerk-divider-line { background: rgba(230,242,255,.29) !important; }
+.auth-clerk-card .cl-dividerText,
+.auth-clerk-card .detectai-clerk-divider-text { color: rgba(219,232,251,.76) !important; }
+.auth-clerk-card .cl-formFieldInput,
+.auth-clerk-card .detectai-clerk-input {
+  min-height: 49px !important;
+  color: #f7fbff !important;
+  caret-color: #82f1ff !important;
+  border: 1px solid rgba(235,247,255,.43) !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.105), rgba(213,231,255,.035)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(162,205,255,.08) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(170%) !important;
+  backdrop-filter: blur(18px) saturate(170%) !important;
+  transition: border-color .22s ease, box-shadow .22s ease, background .22s ease !important;
+}
+.auth-clerk-card .cl-formFieldInput::placeholder,
+.auth-clerk-card .detectai-clerk-input::placeholder { color: rgba(218,232,253,.67) !important; opacity: 1 !important; }
+.auth-clerk-card .cl-formFieldInput:focus,
+.auth-clerk-card .detectai-clerk-input:focus {
+  outline: none !important;
+  border-color: rgba(155,243,255,.95) !important;
+  background: linear-gradient(135deg, rgba(255,255,255,.19), rgba(194,222,255,.075)) !important;
+  box-shadow: 0 0 0 3px rgba(112,227,255,.13), 0 0 24px rgba(95,194,255,.12), inset 0 1px 0 rgba(255,255,255,.4) !important;
+}
+.auth-clerk-card .cl-formButtonPrimary,
+.auth-clerk-card .detectai-clerk-primary {
+  min-height: 49px !important;
+  color: #07152a !important;
+  font-weight: 800 !important;
+  border: 1px solid rgba(255,255,255,.79) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(120deg, rgba(177,249,255,.96), rgba(123,211,255,.90) 48%, rgba(190,166,255,.92)) !important;
+  box-shadow:
+    0 11px 29px rgba(84,184,255,.22),
+    inset 0 1.5px 0 rgba(255,255,255,.97),
+    inset 0 -1px 0 rgba(86,123,199,.23) !important;
+  transition: transform .22s ease, filter .22s ease, box-shadow .22s ease !important;
+}
+.auth-clerk-card .cl-formButtonPrimary:hover,
+.auth-clerk-card .detectai-clerk-primary:hover {
+  transform: translateY(-1px) scale(1.006) !important;
+  filter: brightness(1.04) saturate(1.05) !important;
+  box-shadow: 0 15px 33px rgba(84,184,255,.29), 0 0 0 3px rgba(104,234,255,.085), inset 0 1.5px 0 #fff !important;
+}
+.auth-clerk-card .cl-footer,
+.auth-clerk-card .detectai-clerk-footer {
+  border-top: 1px solid rgba(245,252,255,.29) !important;
+  color: rgba(234,244,255,.83) !important;
+  background:
+    radial-gradient(300px circle at var(--liquid-pointer-x, 50%) var(--liquid-pointer-y, 30%), rgba(255,255,255,.11), transparent 75%),
+    linear-gradient(115deg, rgba(255,255,255,.075), rgba(205,223,255,.035), rgba(182,160,255,.08)) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(170%) !important;
+  backdrop-filter: blur(24px) saturate(170%) !important;
+}
+.auth-clerk-card .cl-footerActionText,
+.auth-clerk-card .detectai-clerk-footer-text { color: rgba(233,244,255,.82) !important; }
+.auth-clerk-card .cl-footerActionLink,
+.auth-clerk-card .detectai-clerk-footer-link,
+.auth-clerk-card .cl-footerPagesLink,
+.auth-clerk-card .detectai-clerk-footer-pages-link {
+  color: #8cf0ff !important;
+  font-weight: 750 !important;
+}
+.auth-clerk-card .cl-badge,
+.auth-clerk-card .detectai-clerk-badge {
+  color: #f3fcff !important;
+  border: 1px solid rgba(255,255,255,.48) !important;
+  border-radius: 999px !important;
+  background: rgba(218,241,255,.17) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+}
+@keyframes liquid-glass-reflection {
+  0%, 17% { left: -85%; opacity: 0; }
+  28% { opacity: .82; }
+  55%, 100% { left: 145%; opacity: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .auth-clerk-card:hover .detectai-clerk-card,
+  .auth-clerk-card:hover .cl-card {
+    border-color: rgba(240,252,255,.86) !important;
+    box-shadow:
+      0 30px 85px rgba(0,4,18,.24),
+      0 0 0 1px rgba(229,248,255,.20),
+      0 0 42px rgba(102,199,255,.15),
+      inset 0 1.5px 0 #fff,
+      inset 1.2px 0 0 rgba(226,248,255,.36),
+      inset -1px 0 0 rgba(194,171,255,.27),
+      inset 0 -1.5px 0 rgba(188,167,255,.39) !important;
+  }
+}
+@media (max-width: 780px) {
+  .auth-clerk-card .detectai-clerk-card,
+  .auth-clerk-card .cl-card {
+    transform: none !important;
+    -webkit-backdrop-filter: blur(18px) saturate(170%) !important;
+    backdrop-filter: blur(18px) saturate(170%) !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .auth-clerk-card .detectai-clerk-card,
+  .auth-clerk-card .cl-card,
+  .auth-clerk-card .cl-footer,
+  .auth-clerk-card .detectai-clerk-footer {
+    background: rgba(28, 39, 61, .9) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-clerk-card .detectai-clerk-card::after,
+  .auth-clerk-card .cl-card::after { animation: none !important; }
+  .auth-clerk-card .detectai-clerk-card,
+  .auth-clerk-card .cl-card { transform: none !important; transition: none !important; }
+}
